@@ -37,7 +37,9 @@ jobs:
         run: |
           test -n "$KEYSTORE" || { echo "secret LWNGE_LAUNCHER_KEYSTORE is missing"; exit 1; }
           mkdir -p ~/.android
-          printf '%s' "$KEYSTORE" | base64 -d > ~/.android/debug.keystore
+          # The secret may carry Windows line endings or spaces, which base64 -d rejects.
+          printf '%s' "$KEYSTORE" | tr -d ' \r\n' | base64 -d > ~/.android/debug.keystore
+          keytool -list -keystore ~/.android/debug.keystore -storepass android | grep -q androiddebugkey
       - name: Build
         working-directory: src/launcher
         run: |
