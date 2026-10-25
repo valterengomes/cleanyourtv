@@ -2795,8 +2795,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
      * nothing animates, so the panel costs the GPU nothing between ticks.
      */
     private void updateRace() {
-        if (raceCalendar.isEmpty()) return;
-        RaceWeekend.State s = RaceWeekend.at(raceCalendar, java.time.Instant.now());
+        // an empty calendar (a theme without race_calendar, or a reset) hides a panel the last theme showed
+        RaceWeekend.State s = raceCalendar.isEmpty() ? null : RaceWeekend.at(raceCalendar, java.time.Instant.now());
         if (s == null) {
             racePanel.setVisibility(View.GONE);
             return;
