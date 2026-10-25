@@ -976,8 +976,13 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         View anchor = topMenu ? findViewById(R.id.btnSettings) : btnInputs;
         if (anchor.getVisibility() != View.VISIBLE) return true;
         if (anchor.isLaidOut()) {
-            anchor.requestFocus();
-            showInputs();
+            // Android 9 delivers a new intent to a paused activity with a brief resume and pause around it, and
+            // onPause() closes popups, so open the menu once that has run (HiSmartTV A4, Android TV 9).
+            anchor.post(() -> {
+                if (isFinishing() || anchor.getVisibility() != View.VISIBLE) return;
+                anchor.requestFocus();
+                showInputs();
+            });
             return true;
         }
         // Cold start: the popup anchors to the pill (or the gear), so wait for the first layout.
