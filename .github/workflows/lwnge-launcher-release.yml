@@ -1,0 +1,58 @@
+# LWNGE: build CleanYourTV's launcher from source at a pinned commit and publish the APK as a release,
+# so LWNGE users do not need Android Studio. Runs only when a "lwnge-launcher-*" tag is pushed.
+# Signed with LWNGE's own stable key (secret LWNGE_LAUNCHER_KEYSTORE), so later releases install as updates.
+name: LWNGE launcher release
+
+on:
+  push:
+    tags: ["lwnge-launcher-*"]
+
+permissions:
+  contents: write # create the release
+  id-token: write # build provenance attestation
+  attestations: write
+
+env:
+  LAUNCHER_COMMIT: b7d71e77b6879350f4e1eb27d4e6003932f3b23a
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.LAUNCHER_COMMIT }}
+          path: src
+          persist-credentials: false
+      - name: Check the source is the pinned commit
+        run: test "$(git -C src rev-parse HEAD)" = "$LAUNCHER_COMMIT"
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Signing key
+        env:
+          KEYSTORE: ${{ secrets.LWNGE_LAUNCHER_KEYSTORE }}
+        run: |
+          test -n "$KEYSTORE" || { echo "secret LWNGE_LAUNCHER_KEYSTORE is missing"; exit 1; }
+          mkdir -p ~/.android
+          printf '%s' "$KEYSTORE" | base64 -d > ~/.android/debug.keystore
+      - name: Build
+        working-directory: src/launcher
+        run: |
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          ./gradlew assembleRelease --console=plain -q
+          cp app/build/outputs/apk/release/app-release.apk "$GITHUB_WORKSPACE/lwnge-launcher.apk"
+      - name: Checksum
+        run: sha256sum lwnge-launcher.apk | tee lwnge-launcher.apk.sha256
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: lwnge-launcher.apk
+      - name: Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" lwnge-launcher.apk lwnge-launcher.apk.sha256 \
+            --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" \
+            --notes "CleanYourTV launcher built unmodified from commit $LAUNCHER_COMMIT (MIT). Built by GitHub Actions for LWNGE; LWNGE checks the SHA-256 before installing."
