@@ -14,6 +14,8 @@ permissions:
 
 env:
   LAUNCHER_COMMIT: b7d71e77b6879350f4e1eb27d4e6003932f3b23a
+  # SHA-256 of LWNGE's signing certificate. A release signed with anything else is refused.
+  SIGNER_SHA256: 9e2bf89484e31372691f4855b80a4452977aa25a3381b1541a934532b6ec485e
 
 jobs:
   build:
@@ -36,16 +38,26 @@ jobs:
           KEYSTORE: ${{ secrets.LWNGE_LAUNCHER_KEYSTORE }}
         run: |
           test -n "$KEYSTORE" || { echo "secret LWNGE_LAUNCHER_KEYSTORE is missing"; exit 1; }
-          mkdir -p ~/.android
           # The secret may carry Windows line endings or spaces, which base64 -d rejects.
-          printf '%s' "$KEYSTORE" | tr -d ' \r\n' | base64 -d > ~/.android/debug.keystore
-          keytool -list -keystore ~/.android/debug.keystore -storepass android | grep -q androiddebugkey
+          printf '%s' "$KEYSTORE" | tr -d ' \r\n' | base64 -d > "$RUNNER_TEMP/lwnge.keystore"
+          keytool -list -keystore "$RUNNER_TEMP/lwnge.keystore" -storepass android | grep -q androiddebugkey
       - name: Build
         working-directory: src/launcher
+        # android.injected.signing.* overrides the build's signing config (the same properties Android Studio
+        # uses), so the APK is signed with LWNGE's key without changing the launcher's source.
         run: |
           echo "sdk.dir=$ANDROID_HOME" > local.properties
-          ./gradlew assembleRelease --console=plain -q
+          ./gradlew assembleRelease --console=plain -q \
+            -Pandroid.injected.signing.store.file="$RUNNER_TEMP/lwnge.keystore" \
+            -Pandroid.injected.signing.store.password=android \
+            -Pandroid.injected.signing.key.alias=androiddebugkey \
+            -Pandroid.injected.signing.key.password=android
           cp app/build/outputs/apk/release/app-release.apk "$GITHUB_WORKSPACE/lwnge-launcher.apk"
+      - name: Check the signer
+        run: |
+          APKSIGNER="$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -n 1)"
+          "$APKSIGNER" verify --print-certs lwnge-launcher.apk | tee signer.txt
+          grep -qi "certificate SHA-256 digest: $SIGNER_SHA256" signer.txt
       - name: Checksum
         run: sha256sum lwnge-launcher.apk | tee lwnge-launcher.apk.sha256
       - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
