@@ -49,15 +49,11 @@
     <string name="columns_label">Застосунків у рядку</string>
     <string name="rows_below_dock_label">Рядків під доком</string>
     <string name="wallpaper_label">Шпалери</string>
-    <string name="wallpaper_state">Шпалери: %1$s</string>
     <string name="wallpaper_none">Немає</string>
     <string name="wallpaper_applied">Шпалери змінено</string>
     <string name="wallpaper_theme_default">Як у темі</string>
-    <string name="animations_state">Анімації: %1$s</string>
     <string name="advanced_effects">Розширені ефекти</string>
-    <string name="advanced_effects_state">Розширені ефекти: %1$s</string>
     <string name="open_on_start_label">Відкривати під час запуску</string>
-    <string name="open_on_start_state">Відкривати під час запуску: %1$s</string>
     <string name="advanced_effects_warning">Додає ефект піднятої плитки, наближення значків і плавні переходи кольору. Може збільшити використання пам’яті; фактична різниця залежить від вашого телевізора.</string>
     <string name="follow_theme">Скинути мої зміни (повернути налаштування теми)</string>
     <string name="follow_theme_hint">Повертає кількість застосунків у рядку, рядки під доком, анімації, розширені ефекти та шпалери до значень із поточної теми. Установка нової теми також скидає ці налаштування.</string>
@@ -66,7 +62,6 @@
     <string name="quick_network">Мережа</string>
     <string name="quick_apps">Застосунки</string>
     <string name="quick_apps_hint">Увімкнути знову</string>
-    <string name="on">Увімк.</string>
     <string name="off">Вимк.</string>
     <string name="enable">Увімкнути</string>
     <string name="input_key_service_description">Відкриває перемикач джерел під час натискання кнопки Input на пульті.</string>

@@ -28,16 +28,12 @@
     <string name="native_settings">Ajustes del fabricante</string>
     <string name="columns_label">Aplicaciones por fila</string>
     <string name="dock_opacity_label">Opacidad de la barra del dock</string>
-    <string name="animations_state">Animaciones: %1$s</string>
     <string name="advanced_effects">Efectos avanzados</string>
-    <string name="advanced_effects_state">Efectos avanzados: %1$s</string>
     <string name="open_on_start_label">Abrir al iniciar</string>
-    <string name="open_on_start_state">Abrir al iniciar: %1$s</string>
     <string name="advanced_effects_warning">Eleva las tarjetas, amplía los iconos y suaviza los cambios de color. Puede aumentar el uso de memoria; depende del televisor.</string>
     <string name="follow_theme">Seguir el tema (restablecer ajustes)</string>
     <string name="follow_theme_hint">Usa el diseño y los efectos del tema actual o los valores integrados. Aplicar o restablecer un tema también borra estos ajustes.</string>
     <string name="tv_settings">Ajustes del televisor</string>
-    <string name="on">Sí</string>
     <string name="off">No</string>
     <string name="enable">Activar</string>
     <string name="dock_edit">Editar el dock</string>
@@ -69,7 +65,6 @@
     <string name="home_settings_help">Elige tu inicio original para dejar de usar LWNGE como inicio, o LWNGE para volver a él. El lanzador original tiene que estar activado y el televisor debe ofrecer un selector de inicio; si estaba desactivado, usa antes el script de restauración.</string>
     <string name="rows_below_dock_label">Filas debajo del dock</string>
     <string name="wallpaper_label">Fondo</string>
-    <string name="wallpaper_state">Fondo: %1$s</string>
     <string name="wallpaper_none">Ninguno</string>
     <string name="wallpaper_applied">Fondo cambiado</string>
     <string name="wallpaper_theme_default">Predeterminado del tema</string>
