@@ -1,5 +1,6 @@
 # LWNGE: build the LWNGE-branded launcher (CleanYourTV + LWNGE branding, branch lwnge-brand) at a pinned commit and publish the APK as a release,
-# so LWNGE users do not need Android Studio. Runs only when a "lwnge-launcher-*" tag is pushed.
+# so LWNGE users do not need Android Studio. Runs only when a "lwnge-launcher-*" tag is pushed, on Valter's own WSL
+# runner (no GitHub-hosted minutes).
 # Signed with LWNGE's own stable key (secret LWNGE_LAUNCHER_KEYSTORE), so later releases install as updates.
 name: LWNGE launcher release
 
@@ -19,9 +20,11 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, cleanyourtv-wsl]
     timeout-minutes: 30
     steps:
+      - name: Clean the work folder
+        run: rm -rf src lwnge-launcher.apk lwnge-launcher.apk.sha256 signer.txt
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ env.LAUNCHER_COMMIT }}
@@ -46,6 +49,7 @@ jobs:
         # android.injected.signing.* overrides the build's signing config (the same properties Android Studio
         # uses), so the APK is signed with LWNGE's key without changing the launcher's source.
         run: |
+          test -n "$ANDROID_HOME" || { echo "ANDROID_HOME is not set on this runner"; exit 1; }
           echo "sdk.dir=$ANDROID_HOME" > local.properties
           ./gradlew assembleRelease --console=plain -q \
             -Pandroid.injected.signing.store.file="$RUNNER_TEMP/lwnge.keystore" \
@@ -64,9 +68,27 @@ jobs:
         with:
           subject-path: lwnge-launcher.apk
       - name: Release
+        # The GitHub API directly: the runner has no gh CLI.
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" lwnge-launcher.apk lwnge-launcher.apk.sha256 \
-            --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" \
-            --notes "LWNGE launcher: CleanYourTV (MIT) with LWNGE branding, built from commit $LAUNCHER_COMMIT. Built by GitHub Actions for LWNGE; LWNGE checks the SHA-256 before installing."
+          python3 - <<'PY'
+          import json, os, pathlib, urllib.request
+          repo, tag, token = os.environ["GITHUB_REPOSITORY"], os.environ["GITHUB_REF_NAME"], os.environ["GH_TOKEN"]
+          head = {"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json"}
+          notes = ("LWNGE launcher: CleanYourTV (MIT) with LWNGE branding, built from commit "
+                   f"{os.environ['LAUNCHER_COMMIT']}. Built on LWNGE's own runner; LWNGE checks the SHA-256 before installing.")
+          req = urllib.request.Request(f"https://api.github.com/repos/{repo}/releases", method="POST", headers=head,
+                                       data=json.dumps({"tag_name": tag, "name": tag, "body": notes}).encode())
+          release = json.load(urllib.request.urlopen(req))
+          for name in ("lwnge-launcher.apk", "lwnge-launcher.apk.sha256"):
+              up = urllib.request.Request(
+                  f"https://uploads.github.com/repos/{repo}/releases/{release['id']}/assets?name={name}",
+                  method="POST", data=pathlib.Path(name).read_bytes(),
+                  headers={**head, "Content-Type": "application/octet-stream"})
+              urllib.request.urlopen(up).read()
+              print("uploaded", name)
+          PY
+      - name: Remove the signing key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/lwnge.keystore"

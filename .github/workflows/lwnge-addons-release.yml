@@ -1,0 +1,106 @@
+# LWNGE: build CleanYourTV add-ons (upstream Gathin23/cleanyourtv at a pinned commit, unmodified) and publish the
+# APKs as one release, so the LWNGE dashboard can install them. Runs only when a "lwnge-addons-*" tag is pushed,
+# on Valter's own WSL runner (no GitHub-hosted minutes). Signed with LWNGE's key (secret LWNGE_LAUNCHER_KEYSTORE).
+name: LWNGE add-ons release
+
+on:
+  push:
+    tags: ["lwnge-addons-*"]
+
+permissions:
+  contents: write # create the release
+  id-token: write # build provenance attestation
+  attestations: write
+
+env:
+  ADDONS_REPO: Gathin23/cleanyourtv
+  ADDONS_COMMIT: 76a9312cd9ac378fc8698f31427805af32c6f965
+  # Folder under addons/ = published name (lwnge-<name>.apk).
+  ADDONS: "weather quiet-hours"
+  # SHA-256 of LWNGE's signing certificate. An APK signed with anything else is refused.
+  SIGNER_SHA256: 9e2bf89484e31372691f4855b80a4452977aa25a3381b1541a934532b6ec485e
+  # The Gradle wrapper every add-on ships (the same jar as the launcher's, Gradle 8.9).
+  WRAPPER_SHA256: 498495120a03b9a6ab5d155f5de3c8f0d986a449153702fb80fc80e134484f17
+
+jobs:
+  build:
+    runs-on: [self-hosted, cleanyourtv-wsl]
+    timeout-minutes: 30
+    steps:
+      - name: Clean the work folder
+        run: rm -rf src out
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ env.ADDONS_REPO }}
+          ref: ${{ env.ADDONS_COMMIT }}
+          path: src
+          persist-credentials: false
+      - name: Check the source is the pinned commit
+        run: test "$(git -C src rev-parse HEAD)" = "$ADDONS_COMMIT"
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Signing key
+        env:
+          KEYSTORE: ${{ secrets.LWNGE_LAUNCHER_KEYSTORE }}
+        run: |
+          test -n "$KEYSTORE" || { echo "secret LWNGE_LAUNCHER_KEYSTORE is missing"; exit 1; }
+          printf '%s' "$KEYSTORE" | tr -d ' \r\n' | base64 -d > "$RUNNER_TEMP/lwnge.keystore"
+          keytool -list -keystore "$RUNNER_TEMP/lwnge.keystore" -storepass android | grep -q androiddebugkey
+      - name: Build
+        # android.injected.signing.* overrides each add-on's signing config, so the APKs are signed with LWNGE's key
+        # without changing their source. Each add-on's unit tests run first.
+        run: |
+          test -n "$ANDROID_HOME" || { echo "ANDROID_HOME is not set on this runner"; exit 1; }
+          mkdir -p out
+          for a in $ADDONS; do
+            echo "::group::$a"
+            echo "$WRAPPER_SHA256  src/addons/$a/gradle/wrapper/gradle-wrapper.jar" | sha256sum -c -
+            (cd "src/addons/$a" && echo "sdk.dir=$ANDROID_HOME" > local.properties && chmod +x gradlew && \
+              ./gradlew testReleaseUnitTest assembleRelease --no-daemon --console=plain -q \
+                -Pandroid.injected.signing.store.file="$RUNNER_TEMP/lwnge.keystore" \
+                -Pandroid.injected.signing.store.password=android \
+                -Pandroid.injected.signing.key.alias=androiddebugkey \
+                -Pandroid.injected.signing.key.password=android)
+            cp "src/addons/$a/app/build/outputs/apk/release/app-release.apk" "out/lwnge-$a.apk"
+            echo "::endgroup::"
+          done
+      - name: Check the signer
+        run: |
+          APKSIGNER="$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -n 1)"
+          for f in out/*.apk; do
+            "$APKSIGNER" verify --print-certs "$f" | tee signer.txt
+            grep -qi "certificate SHA-256 digest: $SIGNER_SHA256" signer.txt
+          done
+      - name: Checksums
+        working-directory: out
+        run: for f in *.apk; do sha256sum "$f" | tee "$f.sha256"; done
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: out/*.apk
+      - name: Release
+        # The GitHub API directly: the runner has no gh CLI.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'PY'
+          import json, os, pathlib, urllib.request
+          repo, tag, token = os.environ["GITHUB_REPOSITORY"], os.environ["GITHUB_REF_NAME"], os.environ["GH_TOKEN"]
+          head = {"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json"}
+          notes = (f"LWNGE add-ons: {os.environ['ADDONS']} from {os.environ['ADDONS_REPO']} (MIT) at commit "
+                   f"{os.environ['ADDONS_COMMIT']}, unmodified, signed with LWNGE's key. Built on LWNGE's own runner; "
+                   "LWNGE checks each SHA-256 before installing.")
+          req = urllib.request.Request(f"https://api.github.com/repos/{repo}/releases", method="POST", headers=head,
+                                       data=json.dumps({"tag_name": tag, "name": tag, "body": notes}).encode())
+          release = json.load(urllib.request.urlopen(req))
+          for f in sorted(pathlib.Path("out").iterdir()):
+              up = urllib.request.Request(
+                  f"https://uploads.github.com/repos/{repo}/releases/{release['id']}/assets?name={f.name}",
+                  method="POST", data=f.read_bytes(), headers={**head, "Content-Type": "application/octet-stream"})
+              urllib.request.urlopen(up).read()
+              print("uploaded", f.name)
+          PY
+      - name: Remove the signing key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/lwnge.keystore"
