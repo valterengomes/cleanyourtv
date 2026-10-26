@@ -171,6 +171,19 @@
     <string name="set_screensaver">Clock screensaver</string>
     <string name="set_screensaver_hint">Starts after this long on Home</string>
     <string name="minutes_short">%1$d min</string>
+    <!-- Home layout Shelves (LWNGE redesign phase 4c) -->
+    <string name="shelf_watch">Watch</string>
+    <string name="shelf_listen">Listen</string>
+    <string name="shelf_play">Play</string>
+    <string name="shelf_tools">Tools</string>
+    <string name="shelf_move_watch">Move to Watch</string>
+    <string name="shelf_move_listen">Move to Listen</string>
+    <string name="shelf_move_play">Move to Play</string>
+    <string name="shelf_move_tools">Move to Tools</string>
+    <string name="set_home_layout">Home layout</string>
+    <string name="set_home_layout_hint">A dock and a grid, or rows by kind of app</string>
+    <string name="layout_grid">Grid</string>
+    <string name="layout_shelves">Shelves</string>
     <string name="add_favourites">+ Add favourites</string>
     <string name="move_hint">Left and right move it · OK puts it here · Back cancels</string>
     <string name="library_empty">No launchable apps found</string>

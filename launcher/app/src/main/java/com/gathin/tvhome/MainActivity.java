@@ -176,6 +176,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private View btnInputs;
     /** The island (config island), standing in for the top bar's pills; null with the classic top bar. */
     private Island island;
+    /** home_layout "shelves": rows by kind of app in place of the dock and the grid; null with the grid. */
+    private Shelves shelves;
     /** What the island asks of Home. */
     private final Island.Host islandHost = new Island.Host() {
         @Override
@@ -211,8 +213,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                     if (vendor != null) open(vendor);
                 });
             }
-            if (dockRow) sink.add(R.string.dock_edit, MainActivity.this::startDockEdit);
-            sink.add(R.string.reorder, MainActivity.this::toggleReorder);
+            // Shelves has no dock and sorts itself: editing the dock and reordering are the grid's.
+            if (dockRow && shelves == null) sink.add(R.string.dock_edit, MainActivity.this::startDockEdit);
+            if (shelves == null) sink.add(R.string.reorder, MainActivity.this::toggleReorder);
             if (moduleCards) sink.add(R.string.module_cards, MainActivity.this::showModuleCards);
         }
 
@@ -861,6 +864,16 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             island.setShown(Island.WIFI, cfg.showNetworkPill);
             island.setShown(Island.APPS, cfg.appLibrary);
         }
+        if (Config.LAYOUT_SHELVES.equals(cfg.homeLayout)) {
+            // Shelves (board 11): the grid stays built, hidden, so everything that reads its tiles keeps working; the
+            // rows show them, under the compact clock.
+            grid.setVisibility(View.GONE);
+            shelves = new Shelves(this, (FrameLayout) grid.getParent(), adapter, () -> {
+                if (island != null) island.focusFromDock();
+                else firstTopButton().requestFocus();
+            }, reducedMotion || !animations);
+            compactClock();
+        }
 
         // Hide the glass when focus leaves the tiles.
         getWindow().getDecorView().getViewTreeObserver().addOnGlobalFocusChangeListener((oldF, newF) -> {
@@ -1168,6 +1181,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         cards = moduleCards ? CardFeature.run(() -> Cards.discover(this, hiddenApps,
                 () -> Cards.load(Cards.storeFile(this)), leanback), none) : none;
         adapter.reload(cards.isEmpty() ? none : CardFeature.run(() -> Cards.shown(cards), none), leanback);
+        if (shelves != null) shelves.update();
         lastFocusedKey = returnKey;
         lastFocused = returnSlot;
         packageSequence = currentPackageSequence(packageSequence);
@@ -2590,6 +2604,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     }
 
     private void focusTile(int position) {
+        if (shelves != null) {
+            shelves.focusFirst();
+            return;
+        }
         libraryFocusPending = false;
         cancelPendingFocusScroll();
         if (adapter.appCount() == 0) {

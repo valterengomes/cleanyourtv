@@ -113,6 +113,11 @@ public final class LauncherSettingsActivity extends Activity {
                 labels(R.string.focus_rim, R.string.focus_glass, R.string.focus_halo),
                 () -> Math.max(0, indexOf(glassKeys, config.glassStyle)),
                 i -> save(choices.edit().putString("glass_style", glassKeys[i]))));
+        String[] layouts = {Config.LAYOUT_GRID, Config.LAYOUT_SHELVES};
+        look.rows.add(choice(R.string.set_home_layout, R.string.set_home_layout_hint,
+                labels(R.string.layout_grid, R.string.layout_shelves),
+                () -> Math.max(0, indexOf(layouts, config.homeLayout)),
+                i -> save(choices.edit().putString("home_layout", layouts[i]))));
         look.rows.add(toggle(R.string.set_cinematic, R.string.set_cinematic_hint, () -> config.cinematicHome,
                 on -> save(choices.edit().putBoolean("cinematic_home", on))));
         look.rows.add(choice(R.string.columns_label, R.string.set_columns_hint, numbers(COLUMN_CHOICES, null),

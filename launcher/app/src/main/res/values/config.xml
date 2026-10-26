@@ -221,6 +221,10 @@
          of the top bar's pills. false keeps the classic top bar (and with it top_menu, icon_only_buttons,
          reorder_button, library_button and top_bar_apps). Can also be set with "island" in a theme. -->
     <bool name="island">true</bool>
+    <!-- LWNGE redesign: Home's layout. "grid" is the dock and the grid; "shelves" puts every Home app in rows by kind
+         (Watch, Listen, Play, Tools, from each app's Play Store category; hold OK moves an app to another row). Can
+         also be set with "home_layout" in a theme. -->
+    <string name="home_layout" translatable="false">grid</string>
 
     <!-- A name after the greeting: "Mr. Trịnh" shows GOOD MORNING, MR. TRỊNH. Empty: the greeting alone. -->
     <string name="greeting_name" translatable="false"></string>
