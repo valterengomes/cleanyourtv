@@ -47,10 +47,12 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.SystemClock;
 import android.provider.Settings;
+import android.text.Editable;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.TextPaint;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.text.style.ForegroundColorSpan;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -549,6 +551,16 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (lunar) lunarDate.setVisibility(View.VISIBLE);
         greetingName = cfg.greetingName;
         applyDateLines(cfg.dateBelowClock);
+        // The clock's first digit lines up with the small text on its left, minute after minute (alignClockInk).
+        TextWatcher realign = new TextWatcher() {
+            @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+            @Override public void onTextChanged(CharSequence s, int start, int before, int count) { }
+            @Override public void afterTextChanged(Editable s) {
+                alignClockInk();
+            }
+        };
+        ((TextView) findViewById(R.id.clock)).addTextChangedListener(realign);
+        ((TextView) findViewById(R.id.greeting)).addTextChangedListener(realign);
         if (cfg.dateBelowClock) moveDateBelowClock();
         if (shamsi) {
             shamsiDate.setVisibility(View.VISIBLE);
@@ -1957,7 +1969,6 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         clock.setTextSize(TypedValue.COMPLEX_UNIT_SP, 44f);
         TextView ampm = findViewById(R.id.ampm);
         ampm.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f);
-        ((ViewGroup.MarginLayoutParams) ampm.getLayoutParams()).bottomMargin = Math.round(7 * density);
         TextView weekday = findViewById(R.id.dateWeekday);
         if (weekday != null) weekday.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f);
         TextView date = findViewById(R.id.date);
@@ -1965,9 +1976,30 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         ViewGroup.MarginLayoutParams dlp = (ViewGroup.MarginLayoutParams) date.getLayoutParams();
         // 5dp between the two lines (SPEC section 3), unless the date sits under the clock on its own line.
         if (dlp.topMargin > 0) dlp.topMargin = Math.round(5 * density);
-        View dateColumn = (View) date.getParent();
-        ViewGroup.MarginLayoutParams clp = (ViewGroup.MarginLayoutParams) dateColumn.getLayoutParams();
-        if (clp.bottomMargin > 0) clp.bottomMargin = Math.round(6 * density);
+    }
+
+    /**
+     * Lines the clock's first digit up with the greeting and the stats line on the left. A large digit carries its own
+     * space before it, a different amount for each digit ("1" more than "8"), so the clock looked indented next to the
+     * small text. Measured from the glyphs and applied as a shift, again whenever the time or the greeting changes.
+     */
+    private void alignClockInk() {
+        if (rtlAppGrid) return;   // Hebrew's layout puts the clock on the right; its edge is the other side
+        TextView clock = findViewById(R.id.clock);
+        TextView greet = findViewById(R.id.greeting);
+        if (clock == null || clock.length() == 0) return;
+        float clockInk = inkLeft(clock);
+        // The small text's own start: the greeting when it shows, else the 2dp the greeting and stats are indented by.
+        float textInk = 2 * density + (greet != null && greet.getVisibility() == View.VISIBLE && greet.length() > 0
+                ? inkLeft(greet) : 0f);
+        clock.setTranslationX(textInk - clockInk);
+    }
+
+    /** How far the first character's ink starts from the text's origin, in pixels. */
+    private static float inkLeft(TextView text) {
+        Rect bounds = new Rect();
+        text.getPaint().getTextBounds(text.getText().toString(), 0, 1, bounds);
+        return bounds.left;
     }
 
     /**
@@ -2500,6 +2532,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             // Date and clock flush right; the greeting stays left and follows the clock by translation.
             lp.gravity = Gravity.RIGHT;
             ((LinearLayout.LayoutParams) clockRow.getLayoutParams()).gravity = Gravity.RIGHT;
+        } else {
+            lp.setMarginStart(Math.round(2 * density));   // the greeting's and the stats line's indent
         }
         clockColumn.addView(column, clockColumn.indexOfChild(clockRow) + 1, lp);
     }

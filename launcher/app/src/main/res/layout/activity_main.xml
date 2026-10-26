@@ -210,8 +210,6 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="6dp"
-                        android:layout_gravity="bottom"
-                        android:layout_marginBottom="14dp"
                         android:format12Hour="a"
                         android:format24Hour=""
                         android:textColor="@color/lw_text2"
@@ -231,13 +229,13 @@
                         android:visibility="gone"
                         android:background="#33FFFFFF" />
 
+                    <!-- Bottom-aligned on the clock's baseline: the column's baseline is its date line's (child 2). -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_weight="1"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="bottom"
                         android:layout_marginStart="16dp"
-                        android:layout_marginBottom="12dp"
+                        android:baselineAlignedChildIndex="2"
                         android:orientation="vertical">
 
                         <!-- Shamsi date ("27 Mehr 1405"), shown when shamsi_date is on. -->
