@@ -45,8 +45,16 @@ final class DockSlots {
         return n;
     }
 
-    /** A position focus can land on: an empty slot sends it to the last dock app. */
+    /**
+     * A position focus can land on. The first empty slot is "Add favourites" (docs/ui/launcher board 13) and takes
+     * focus; the empty slots after it send focus to it.
+     */
     static int focusable(int position, int docked, int empty) {
-        return empty > 0 && position >= docked && position < docked + empty ? docked - 1 : position;
+        return empty > 0 && position > docked && position < docked + empty ? docked : position;
+    }
+
+    /** Where the dock row ends for Left/Right: after "Add favourites" when slots are empty, else the whole dock. */
+    static int focusEnd(int docked, int empty, int dockSize) {
+        return empty > 0 ? docked + 1 : dockSize;
     }
 }

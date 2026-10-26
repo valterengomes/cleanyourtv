@@ -74,10 +74,15 @@ public class DockSlotsTest {
         assertEquals(0, DockSlots.empty(2, 4, 2, false));
     }
 
-    @Test public void focusOnAnEmptySlotGoesToTheLastDockApp() {
-        assertEquals(2, DockSlots.focusable(3, 3, 1));
-        assertEquals(1, DockSlots.focusable(2, 2, 2));
-        assertEquals(1, DockSlots.focusable(3, 2, 2));
+    @Test public void theFirstEmptySlotTakesFocusAndTheRestSendItThere() {
+        assertEquals(3, DockSlots.focusable(3, 3, 1));
+        assertEquals(2, DockSlots.focusable(2, 2, 2));
+        assertEquals(2, DockSlots.focusable(3, 2, 2));
+    }
+
+    @Test public void theDockRowEndsAfterAddFavourites() {
+        assertEquals(4, DockSlots.focusEnd(3, 2, 5));
+        assertEquals(5, DockSlots.focusEnd(5, 0, 5));
     }
 
     @Test public void focusOnATileStaysPut() {

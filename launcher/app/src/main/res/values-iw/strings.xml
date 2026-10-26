@@ -203,6 +203,7 @@
     <string name="set_screensaver">שומר מסך שעון</string>
     <string name="set_screensaver_hint">מתחיל אחרי זמן כזה במסך הבית</string>
     <string name="minutes_short">%1$d דק׳</string>
+    <string name="add_favourites">+ הוספת מועדפים</string>
     <string name="move_hint">ימינה ושמאלה מזיזים · OK משאיר כאן · חזרה מבטלת</string>
     <string name="last_opened">פתיחה אחרונה: %1$s</string>
 </resources>

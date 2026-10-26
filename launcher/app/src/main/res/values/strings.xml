@@ -171,6 +171,7 @@
     <string name="set_screensaver">Clock screensaver</string>
     <string name="set_screensaver_hint">Starts after this long on Home</string>
     <string name="minutes_short">%1$d min</string>
+    <string name="add_favourites">+ Add favourites</string>
     <string name="move_hint">Left and right move it · OK puts it here · Back cancels</string>
     <string name="library_empty">No launchable apps found</string>
     <string name="library_on_home">On Home</string>
