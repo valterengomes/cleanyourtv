@@ -127,7 +127,7 @@ A new key needs one there in the same pull request.
 | `home_idle_clock_minutes` | 0 to 1440 | Minutes Home may sit untouched before it shows the clock screensaver (a thin clock and date drifting over a slow glow, as the system "Clock" screensaver does). Any key returns to Home. It starts only from Home, never over Live TV or an app; 0 is off (default) |
 | `clock_wallpaper` | bool | The clock screensaver over Home's wallpaper instead of black with a coloured glow; the clock still moves every minute (`false` by default) |
 | `clock_wallpaper_dim` | 0 to 90 | How dark that wallpaper is behind the clock, in percent (50 by default) |
-| `clock_glow` | bool | The clock screensaver's coloured glow (`true` by default); `false` leaves the moving clock on plain black, e.g. for an OLED |
+| `clock_glow` | bool | The clock screensaver's coloured glow (`false` by default: the moving clock on plain black, as the LWNGE design has it); `true` adds a slow glow that shifts colour every minute |
 | `glow_style` | string | Shape of the glow behind the focused app, in its colour: `radial` (default) or `horizon`, the colour washing down from the top edge to black; the cinematic shelf keeps its own |
 | `glass_style` | string | Look of the focus highlight: `rim` (default: a 2dp cream rim with a soft glow in the focused app's colour), `glass` (a translucent cream slab with a hairline edge) or `halo` (a thin ring in the app's colour with a softer ring around it, no cream) |
 | `cinematic_home` | bool | Cinematic top shelf: the focused dock app's artwork, softened, fills the top of the screen in its colour, with a larger name, "Last opened" (apps opened from Home), dock position dots, a focus glow in the app's colour and a translucent dock band; off by default |

@@ -12,10 +12,13 @@ import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.format.DateFormat;
 import android.util.DisplayMetrics;
 import android.view.View;
+import android.widget.TextClock;
 
 import java.io.File;
+import java.util.Locale;
 import java.util.Random;
 
 /**
@@ -26,6 +29,8 @@ import java.util.Random;
 final class ClockScene {
 
     private static final long MOVE_MS = 60_000L;
+    /** The drift (SPEC section 6): 600 ms fade out, move, 600 ms fade in. */
+    private static final long FADE_MS = 600L;
     /** The glow's colour change: 16 steps over 8 s. Animated per frame it redrew the full-screen gradient ~480 times. */
     private static final int GLOW_STEPS = 16;
     private static final long GLOW_STEP_MS = 500L;
@@ -47,6 +52,8 @@ final class ClockScene {
     private Resources wallpaperRes;
     /** Bumped by stop(): a decode started before it finds a different number and drops its result. Main thread only. */
     private int wallpaperGeneration;
+    /** reduced_motion or animations off: the clock still moves (burn-in), as an instant cut. */
+    private boolean reducedMotion;
 
     private final Runnable tick = new Runnable() {
         @Override
@@ -68,6 +75,14 @@ final class ClockScene {
                 glow.setGradientRadius((r - l) * 0.55f));
         colorIndex = random.nextInt(PALETTE.length);
         setGlow(PALETTE[colorIndex]);
+        // "Monday, 26 October" in the language's own order and sentence case, under the clock.
+        TextClock date = root.findViewById(R.id.dreamDate);
+        if (date != null) {
+            Locale locale = root.getResources().getConfiguration().getLocales().get(0);
+            String pattern = DateFormat.getBestDateTimePattern(locale, "EEEEdMMMM");
+            date.setFormat12Hour(pattern);
+            date.setFormat24Hour(pattern);
+        }
     }
 
     void start() {
@@ -100,6 +115,7 @@ final class ClockScene {
         } catch (RuntimeException e) {
             return;
         }
+        reducedMotion = cfg.reducedMotion || !cfg.animations;
         if (!cfg.clockWallpaper) {
             // clock_glow false: plain black behind the clock (OLED); the clock itself still moves every minute.
             if (!cfg.clockGlow) {
@@ -161,9 +177,13 @@ final class ClockScene {
     }
 
     private void moveClock() {
-        content.animate().alpha(0f).setDuration(900).withLayer().withEndAction(() -> {
+        if (reducedMotion) {
             placeClock();
-            content.animate().alpha(1f).setDuration(1200).withLayer().start();
+            return;
+        }
+        content.animate().alpha(0f).setDuration(FADE_MS).withLayer().withEndAction(() -> {
+            placeClock();
+            content.animate().alpha(1f).setDuration(FADE_MS).withLayer().start();
         }).start();
     }
 

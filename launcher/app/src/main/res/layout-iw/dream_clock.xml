@@ -32,7 +32,7 @@
                 android:layout_marginEnd="10dp"
                 android:format12Hour="a"
                 android:format24Hour=""
-                android:textColor="#99FFFFFF"
+                android:textColor="#9EF5F2EC"
                 android:textSize="22sp"
                 android:fontFamily="@string/font_medium"
                 android:letterSpacing="0.08"
@@ -44,7 +44,7 @@
                 android:layout_height="wrap_content"
                 android:format12Hour="h:mm"
                 android:format24Hour="HH:mm"
-                android:textColor="#E6FFFFFF"
+                android:textColor="#D1F5F2EC"
                 android:textSize="120sp"
                 android:fontFamily="@string/font_extralight"
                 android:letterSpacing="-0.04"
@@ -60,10 +60,8 @@
             android:gravity="right"
             android:format12Hour="@string/date_format"
             android:format24Hour="@string/date_format"
-            android:textColor="#8CFFFFFF"
+            android:textColor="#9EF5F2EC"
             android:textSize="18sp"
-            android:fontFamily="@string/font_regular"
-            android:letterSpacing="0.14"
-            android:textAllCaps="true" />
+            android:fontFamily="@string/font_light" />
     </LinearLayout>
 </FrameLayout>
