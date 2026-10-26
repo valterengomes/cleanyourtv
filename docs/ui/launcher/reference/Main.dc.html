@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Launcher home, default</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#F5F2EC}a:hover{color:#BAB7B0}
+</style>
+</helmet>
+<div class="ll" style="background: #0F1215">
+
+<div class="ll-clockarea">
+<p class="ll-greet">Good evening, Ana</p>
+<div class="ll-clockrow">
+<p class="ll-clock">21:40</p>
+<p class="ll-date ll-date--beside"><span>Monday</span><small>26 October</small></p>
+</div>
+<p class="ll-stats"><span>CPU <b>12%</b></span><span>Memory <b>1.1 GB</b> free</span><span>Storage <b>9.2 GB</b> free</span></p>
+</div>
+
+<button class="ll-island" type="button" aria-label="Quick menu: inputs, network, apps and settings">
+<svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1"/><path d="M3 12h10"/><path d="M10 9l3 3-3 3"/></svg>
+<svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><g transform="translate(0 -1.3)"><path d="M2 8.82a15 15 0 0 1 20 0"/><path d="M5 12.86a10 10 0 0 1 14 0"/><path d="M8.5 16.43a5 5 0 0 1 7 0"/><path d="M12 20h.01"/></g></svg>
+<svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></svg>
+<svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><g transform="translate(12 12) scale(0.96) translate(-12 -12)"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" vector-effect="non-scaling-stroke"/><circle cx="12" cy="12" r="3" vector-effect="non-scaling-stroke"/></g></svg>
+</button>
+
+<p class="ll-appname">YouTube</p>
+<div class="ll-dock">
+<sc-for list="{{dock}}" as="a" hint-placeholder-count="5">
+<div class="ll-banner {{a.focus}}" style="--tint: {{a.tint}}; --a1: {{a.a1}}; --a2: {{a.a2}}; --glow: {{a.glow}}">
+<span class="ll-banner__a"></span><span class="ll-banner__b"></span>
+<span class="ll-banner__name">{{a.name}}</span>
+</div>
+</sc-for>
+</div>
+
+<p class="ll-gridlabel">Recent apps</p>
+<div class="ll-grid" style="--cols: 7">
+<sc-for list="{{grid}}" as="g" hint-placeholder-count="14">
+<div class="ll-icontile" style="--tint: {{g.tint}}; --icon: {{g.icon}}">
+<span class="ll-icontile__icon">{{g.l}}</span>
+<span class="ll-icontile__name">{{g.name}}</span>
+</div>
+</sc-for>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1920,"height":1080}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const dock = [
+      { name: 'YouTube', tint: '#7D2A27', a1: 'rgba(255,214,200,0.16)', a2: 'rgba(30,6,6,0.30)', glow: 'rgba(232,96,84,0.55)', focus: 'll-f-rim' },
+      { name: 'Netflix', tint: '#26262D', a1: 'rgba(200,60,60,0.30)', a2: 'rgba(0,0,0,0.35)', glow: 'rgba(200,60,60,0.5)', focus: '' },
+      { name: 'Prime Video', tint: '#1E3954', a1: 'rgba(140,200,255,0.18)', a2: 'rgba(5,15,30,0.35)', glow: 'rgba(90,160,230,0.5)', focus: '' },
+      { name: 'Spotify', tint: '#1D4632', a1: 'rgba(120,230,160,0.18)', a2: 'rgba(0,20,10,0.35)', glow: 'rgba(90,210,140,0.5)', focus: '' },
+      { name: 'Plex', tint: '#4A391A', a1: 'rgba(240,190,80,0.22)', a2: 'rgba(20,12,0,0.35)', glow: 'rgba(235,175,60,0.5)', focus: '' }
+    ];
+    const g = (name, tint, icon) => ({ name, tint, icon, l: name[0] });
+    const grid = [
+      g('Twitch', '#2A2238', '#6B4FA8'), g('Disney+', '#1B2440', '#3A5BA8'), g('Kodi', '#1A2C36', '#2F7A9A'),
+      g('RTP Play', '#2B2A1C', '#8A7A2E'), g('Steam Link', '#1C2430', '#3E5876'), g('Files', '#22262C', '#555B66'),
+      g('Browser', '#1E2A2A', '#3B7070'), g('VLC', '#33261A', '#A8642A'), g('Max', '#1F1F33', '#4A4AA0'),
+      g('Pluto TV', '#2C2030', '#7A4A8A'), g('MUBI', '#26221E', '#6A5A48'), g('Moonlight', '#1C2228', '#4A6278'),
+      g('Crunchyroll', '#33241A', '#A85A2A'), g('Photos', '#1F2A24', '#4A7A5A')
+    ];
+    return { dock, grid };
+  }
+}
+</script>
+</body>
+</html>

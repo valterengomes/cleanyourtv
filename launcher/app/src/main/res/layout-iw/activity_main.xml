@@ -201,6 +201,13 @@
                         android:includeFontPadding="false"
                         android:visibility="gone" />
 
+                    <!-- The redesign's weekday line; Hebrew keeps its own one-line date for now (MainActivity.applyDateLines). -->
+                    <TextClock
+                        android:id="@+id/dateWeekday"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone" />
+
                     <TextClock
                         android:id="@+id/date"
                         android:gravity="right"

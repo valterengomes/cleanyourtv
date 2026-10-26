@@ -65,6 +65,7 @@ import android.view.animation.LayoutAnimationController;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextClock;
 import android.widget.RelativeLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
@@ -148,6 +149,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private boolean ambientGlow;
     /** config.xml app_glow: the highlight takes the focused app's colour on every tile. */
     private boolean appGlow;
+    /** recent_row is on: the grid's first row holds the recent apps, so reorder reloads around it. */
+    private boolean recentRowOn;
     /** config.xml glow_style: the shape setAmbient paints the glow mask in. */
     private String glowStyle;
     /** config.xml cinematic_white_focus: the cinematic shelf keeps the white highlight. */
@@ -486,6 +489,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         lunarOffset = Lunar.offsetFor(cfg.lunarUtcOffset, Locale.getDefault());
         if (lunar) lunarDate.setVisibility(View.VISIBLE);
         greetingName = cfg.greetingName;
+        applyDateLines(cfg.dateBelowClock);
         if (cfg.dateBelowClock) moveDateBelowClock();
         if (shamsi) {
             shamsiDate.setVisibility(View.VISIBLE);
@@ -580,6 +584,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                     AnimationUtils.loadAnimation(this, R.anim.tile_enter), 0.06f));
         }
         adapter = new AppAdapter(this, this, COLUMNS, cfg);
+        recentRowOn = cfg.recentRow && dockRow && !singleRow;
+        // recent_row: the "Recent apps" label above the first grid row (the adapter moves the recent apps there).
+        if (cfg.recentRow && dockRow && !singleRow) grid.addItemDecoration(new RecentLabel(this, adapter, COLUMNS, density));
         dockApps = cfg.dockApps;
         fillDockLeavesSlots = !cfg.fillDock;
         Order savedOrder = Order.load(Order.file(this));
@@ -596,7 +603,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             int tileW = AppAdapter.tileWidthPx(inner, h, COLUMNS, rowsBelowDock, cfg.dockTitle, cfg.dockRow, density);
             int itemH = AppAdapter.itemHeightPx(AppAdapter.tileHeightPx(tileW), density);
             int dockRow = itemH + (int) (AppAdapter.DOCK_EXTRA_DP * density);   // item height plus DockDecoration offsets
-            int gridRows = itemH * rowsBelowDock;
+            int gridRows = itemH * rowsBelowDock + (cfg.recentRow && rowsBelowDock > 0 ? (int) (AppAdapter.RECENT_LABEL_DP * density) : 0);
             // Keep the hero below the header when the library is enabled on a short screen,
             // even when the theme requests an extra visible row below the dock.
             int shelfClearance = cfg.appLibrary ? hero.getMeasuredHeight() + (int) (40 * density) : 0;
@@ -1316,7 +1323,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         dockedAtStart = adapter.dockFilled();
         for (int i = 0; i < Math.min(dockedAtStart, adapter.movableCount()); i++) dockInSession.add(adapter.keyAt(i));
         adapter.setReordering(true);
-        if (adapter.hasEmptySlots()) reloadTiles();   // every position must hold a tile that can move
+        // Every position must hold a tile that can move; and the recent row goes back into the real order, so a move
+        // works on (and saves) the owner's order, not the recent apps' places.
+        if (adapter.hasEmptySlots() || adapter.recentCount() > 0) reloadTiles();
         reordering = true;
         orderAtStart = adapter.movableKeys();
         glass.setAccent(REORDER_ACCENT);
@@ -1484,7 +1493,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 Toast.makeText(this, R.string.reorder_not_saved, Toast.LENGTH_SHORT).show();
             }
         }
-        if (fillDockLeavesSlots) reloadTiles();   // the empty dock slots left out while reordering come back
+        // The empty dock slots left out while reordering come back, and so does the recent row.
+        if (fillDockLeavesSlots || recentRowOn) reloadTiles();
     }
 
     /**
@@ -1604,7 +1614,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         r.set(0, 0, card.getWidth(), card.getHeight());
         root.offsetDescendantRectToMyCoords(card, r);
         float pad = 6f * density;        // matches GlassView's glow inset
-        float scale = adapter.focusScale();
+        float scale = adapter.focusScale(position);
         float w = card.getWidth() * scale + 2 * pad;
         float h = card.getHeight() * scale + 2 * pad;
         float x = r.exactCenterX() - w / 2f;
@@ -1678,7 +1688,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         View card = vh == null ? null : vh.itemView.findViewById(R.id.card);
         if (card == null || card.getWidth() <= 0 || !card.isFocused()) return;
         float pad = 6f * density;
-        float scale = adapter.focusScale();
+        float scale = adapter.focusScale(pos);
         int w = (int) (card.getWidth() * scale + 2 * pad);
         int h = (int) (card.getHeight() * scale + 2 * pad);
         if (!glassShown || card.getWidth() != glassCardW || glass.getWidth() != w || glass.getHeight() != h) {
@@ -1691,7 +1701,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private void showHero(int position, float dockTopInRoot) {
         String label = adapter.labelAt(position);
         int color = adapter.ambientColorAt(position);
-        float y = dockTopInRoot - 14 * density - 26 * density - hero.getHeight();
+        // The redesign's name sits 16dp above the dock (SPEC section 3); the cinematic shelf keeps its own room.
+        float y = dockTopInRoot - (cinematic ? 40 : 16) * density - hero.getHeight();
         boolean changed = !label.contentEquals(heroName.getText());
         if (cinematic && heroArtAlpha > 0f) showHeroArt(position);
 
@@ -2259,6 +2270,26 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
      * date_below_clock: the date column moves to its own line under the clock, in the vertical LinearLayout that holds
      * the clock's row, and the line between them goes. In Hebrew (rtl_menu_bar) the date and the clock's row sit right.
      */
+    /**
+     * The date in the redesign (docs/ui/launcher/SPEC.md section 3): beside the clock, the weekday over the day and
+     * month; under it (date_below_clock), one line with both. Android picks each language's order and words.
+     * Layouts without the weekday line (Hebrew) keep their own single date.
+     */
+    private void applyDateLines(boolean below) {
+        TextClock weekday = findViewById(R.id.dateWeekday);
+        if (weekday == null || weekday.getVisibility() == View.GONE) return;
+        TextClock date = findViewById(R.id.date);
+        Locale locale = Locale.getDefault();
+        String pattern = android.text.format.DateFormat.getBestDateTimePattern(locale, below ? "EEEEdMMMM" : "dMMMM");
+        date.setFormat12Hour(pattern);
+        date.setFormat24Hour(pattern);
+        if (below) {
+            weekday.setVisibility(View.GONE);
+            date.setTextColor(getColor(R.color.lw_text));
+            ((LinearLayout.LayoutParams) date.getLayoutParams()).topMargin = 0;
+        }
+    }
+
     private void moveDateBelowClock() {
         View column = (View) findViewById(R.id.date).getParent();
         View clockRow = (View) findViewById(R.id.clock).getParent();

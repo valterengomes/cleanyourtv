@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Launcher app library</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#F5F2EC}a:hover{color:#BAB7B0}
+</style>
+</helmet>
+<div class="ll" style="background: #0F1215">
+
+<div class="ll-screenhead">
+<div>
+<h1>All apps</h1>
+<p>35 apps · 11 on Home</p>
+</div>
+<div class="ll-chips">
+<span class="ll-chip is-on">All</span>
+<span class="ll-chip">On Home</span>
+<span class="ll-chip">Not on Home</span>
+</div>
+</div>
+
+<div class="ll-grid" style="--cols: 7; top: 200px">
+<sc-for list="{{apps}}" as="g" hint-placeholder-count="35">
+<div class="ll-icontile {{g.focus}}" style="--tint: {{g.tint}}; --icon: {{g.icon}}; --glow: {{g.glow}}">
+<span class="ll-icontile__icon">{{g.l}}</span>
+<span class="ll-icontile__name">{{g.name}}</span>
+<sc-if value="{{g.home}}" hint-placeholder-val="{{false}}"><span class="ll-badge-home" role="img" aria-label="On Home"><svg class="ll-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span></sc-if>
+</div>
+</sc-for>
+</div>
+
+<div class="ll-hints">
+<span class="ll-hint"><span class="ll-key">OK</span>Add to Home</span>
+<span class="ll-hint"><span class="ll-key">Hold OK</span>Open or app info</span>
+<span class="ll-hint"><span class="ll-key">Back</span>Close</span>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1920,"height":1080}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const list = [
+      ['Apple TV', '#3C4048'], ['Browser', '#3B7070'], ['Clock', '#555B66'], ['Crunchyroll', '#A85A2A'], ['Disney+', '#3A5BA8'],
+      ['Files', '#555B66'], ['Google Play', '#3E7A5A'], ['Kodi', '#2F7A9A'], ['Live Channels', '#5A6A7A'], ['Max', '#4A4AA0'],
+      ['Moonlight', '#4A6278'], ['MUBI', '#6A5A48'], ['Music', '#8A4A6A'], ['Netflix', '#8A2C30'], ['Photos', '#4A7A5A'],
+      ['Plex', '#A8822A'], ['Pluto TV', '#7A4A8A'], ['Prime Video', '#3A5F8A'], ['RTP Play', '#8A7A2E'], ['Settings', '#555B66'],
+      ['SkyShowtime', '#3A4A9A'], ['SmartTube', '#9A3A34'], ['Spotify', '#2E7A50'], ['Steam Link', '#3E5876'], ['Stremio', '#5A3A8A'],
+      ['Tidal', '#3C4048'], ['Twitch', '#6B4FA8'], ['VLC', '#A8642A'], ['Weather', '#3A6A9A'], ['X-plore', '#5A6A3A'],
+      ['YouTube', '#9A3430'], ['YouTube Kids', '#9A5A30'], ['YouTube Music', '#8A3040'], ['Zattoo', '#3A7A7A'], ['[APP NAME]', '#454850']
+    ];
+    const home = new Set(['Disney+', 'Kodi', 'Netflix', 'Plex', 'Prime Video', 'RTP Play', 'Spotify', 'Steam Link', 'Twitch', 'YouTube', 'Files']);
+    const apps = list.map(([name, icon], i) => ({
+      name, icon, l: name[0] === '[' ? '?' : name[0], tint: '#1C1F24', home: home.has(name),
+      focus: name === 'Max' ? 'll-f-rim' : '', glow: 'rgba(110,110,230,0.55)'
+    }));
+    return { apps };
+  }
+}
+</script>
+</body>
+</html>

@@ -26,6 +26,7 @@ import android.view.ViewGroup;
 import android.view.ViewOutlineProvider;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
+import android.view.animation.PathInterpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -95,9 +96,17 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
     }
 
+    /** Focus zoom in the grid; the dock zooms a little less (SPEC section 4), see focusScale. */
     static final float FOCUS_SCALE = 1.10f;
-    /** Design size of a tile (dp); tiles shrink from here when the columns don't fit, see tileWidthPx. */
-    static final float DESIGN_W_DP = 180f, DESIGN_H_DP = 101f;
+    static final float DOCK_FOCUS_SCALE = 1.08f;
+    /** Design size of a tile (dp): the LWNGE dock banner, 152 x 85.5 (SPEC section 2); tiles shrink from here when the columns don't fit, see tileWidthPx. */
+    static final float DESIGN_W_DP = 152f, DESIGN_H_DP = 85.5f;
+    /** Corner radius of a tile at the design width (SPEC: tile 10dp). */
+    static final float TILE_RADIUS_DP = 10f;
+    /** Room above the first grid row for the "Recent apps" label (RecentLabel), when recent_row puts one there. */
+    static final float RECENT_LABEL_DP = 28f;
+    /** Focus in and out (SPEC section 6): decelerate, 160 ms in and 120 ms out. */
+    static final int FOCUS_IN_MS = 160, FOCUS_OUT_MS = 120;
 
     /**
      * Tile width for a grid of this inner width: the cell minus room for the focus zoom and the glass
@@ -138,9 +147,9 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     /** DockDecoration's offsets above and below the dock row. */
     static final float DOCK_EXTRA_DP = 6 + 12;
     /** Room kept under the last row rows_below_dock asks for (MainActivity places the dock with the same). */
-    static final float BOTTOM_ROOM_DP = 30;
+    static final float BOTTOM_ROOM_DP = 16;
     /** Room kept above the dock for the dock title (48sp hero name plus its 40dp gap) when dock_title is on. */
-    static final float TITLE_ROOM_DP = 104;
+    static final float TITLE_ROOM_DP = 64;
     /** dock_row false: room above the first row for its zoom and glass (MainActivity places the grid with it). */
     static final float TOP_ROOM_DP = 12;
 
@@ -216,6 +225,10 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final Map<String, String> appLabels, appBanners;
     /** Every app tile is its icon on a card tinted from that icon, never its banner (config.xml, uniform_tiles). */
     private final boolean uniformTiles;
+    /** recent_row: the first grid row holds the non-dock apps opened most recently from Home (LastOpened). */
+    private final boolean recentRow;
+    /** How many tiles the last reload moved into the recent row (0 when none was opened yet, or recent_row is off). */
+    private int recentCount;
     private final List<Entry> items = new ArrayList<>();
 
     AppAdapter(Context ctx, TileListener listener, int dockSize, Config cfg) {
@@ -243,6 +256,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         this.appLabels = cfg.appLabels;
         this.appBanners = cfg.appBanners;
         this.uniformTiles = cfg.uniformTiles;
+        this.recentRow = cfg.recentRow && cfg.dockRow && !cfg.singleRow;
         // Tiles keep their identity across reload(), so a focused tile stays on its app instead of
         // its view being rebound to whatever app now sits in that slot.
         setHasStableIds(true);
@@ -335,9 +349,40 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             fresh.add(docked + i, new Entry(Entry.EMPTY, "", new ComponentName(ctx, "empty-dock-slot-" + i),
                     null, null, null, 0));
         }
+        // The dock is the first row (dockSize places): favourites, then empty slots or, with fill_dock, grid apps.
+        recentCount = recentRow && !reordering ? promoteRecent(fresh, dockSize) : 0;
         items.clear();
         items.addAll(fresh);
         notifyDataSetChanged();
+    }
+
+    /**
+     * Moves the app tiles after the dock that Home opened most recently to the start of the grid, at most one row,
+     * newest first; the rest keep their order (the owner's saved order included). Never while reordering, so a move
+     * always works on, and saves, the real order. Returns how many tiles it moved.
+     */
+    private int promoteRecent(List<Entry> list, int gridStart) {
+        List<Entry> opened = new ArrayList<>();
+        for (int i = gridStart; i < list.size(); i++) {
+            Entry e = list.get(i);
+            if (e.kind == Entry.APP && LastOpened.get(ctx, e.pkg) > 0) opened.add(e);
+        }
+        if (opened.isEmpty()) return 0;
+        Collections.sort(opened, (a, b) -> Long.compare(LastOpened.get(ctx, b.pkg), LastOpened.get(ctx, a.pkg)));
+        List<Entry> recent = opened.subList(0, Math.min(dockSize, opened.size()));
+        list.removeAll(recent);
+        list.addAll(Math.min(gridStart, list.size()), recent);
+        return recent.size();
+    }
+
+    /** Tiles in the recent row after the dock (0: no "Recent apps" label). */
+    int recentCount() {
+        return recentCount;
+    }
+
+    /** Adapter position of the first grid tile, the recent row's first when there is one. */
+    int gridStart() {
+        return dockSize;
     }
 
     /** A banner_* drawable bundled with the launcher, or null for none or a name that is not one. */
@@ -426,7 +471,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             iconLp.bottomMargin = 0;
             icon.setLayoutParams(iconLp);
         }
-        return new Holder(v, listener, animations, advancedEffects, reducedMotion, restNameAlpha, focusOvershoot);
+        return new Holder(v, listener, animations, advancedEffects, reducedMotion, restNameAlpha, focusOvershoot, this);
     }
 
     @Override
@@ -454,8 +499,8 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         h.name.setVisibility(dockKind && restNameAlpha == 0f ? View.INVISIBLE : View.VISIBLE);
         boolean focused = h.card.isFocused();   // a rebind after reload() can hit the focused tile
         h.name.setAlpha(focused ? 1f : restNameAlpha);
-        h.card.setScaleX(focused && animations ? focusScale() : 1f);
-        h.card.setScaleY(focused && animations ? focusScale() : 1f);
+        h.card.setScaleX(focused ? focusScale(position) : 1f);
+        h.card.setScaleY(focused ? focusScale(position) : 1f);
         h.card.setTranslationY(focused && advancedEffects ? -4f * ctx.getResources().getDisplayMetrics().density : 0f);
         h.card.setTranslationZ(focused && advancedEffects ? 8f * ctx.getResources().getDisplayMetrics().density : 0f);
         h.banner.setScaleX(focused && advancedEffects ? 1.035f : 1f);
@@ -519,7 +564,8 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
         try {
             ctx.startActivity(i);
-            if (cinematic) LastOpened.record(ctx, e.pkg);
+            // Every launch from Home is noted: the recent row (recent_row) and the cinematic shelf's "Last opened" use it.
+            LastOpened.record(ctx, e.pkg);
             if (advancedEffects && !reducedMotion && ctx instanceof Activity) {
                 ((Activity) ctx).overridePendingTransition(R.anim.app_open_enter, R.anim.app_open_exit);
             }
@@ -642,7 +688,17 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     float focusScale() {
-        return !animations ? 1f : advancedEffects ? 1.12f : 1.10f;
+        return focusScale(dockSize);
+    }
+
+    /**
+     * Focus zoom for a tile at this position: none without animations or with reduced motion (SPEC: no scale), 1.08
+     * in the dock and 1.10 in the grid, 1.12 with advanced effects.
+     */
+    float focusScale(int position) {
+        if (!animations || reducedMotion) return 1f;
+        if (advancedEffects) return 1.12f;
+        return dockRow && position >= 0 && position < dockSize ? DOCK_FOCUS_SCALE : FOCUS_SCALE;
     }
 
     /** A vivid colour sampled from the app's banner (or icon), cached per entry; a card's accent when it set one. */
@@ -844,9 +900,9 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         return Color.HSVToColor(hsv);
     }
 
-    /** Corner radius for a tile of this width: 16dp at the design width, proportionally less when smaller. */
+    /** Corner radius for a tile of this width: TILE_RADIUS_DP at the design width, proportionally less when smaller. */
     static float cornerRadius(int tileWidthPx, float density) {
-        return 16f * density * Math.min(1f, tileWidthPx / (DESIGN_W_DP * density));
+        return TILE_RADIUS_DP * density * Math.min(1f, tileWidthPx / (DESIGN_W_DP * density));
     }
 
     static final class Holder extends RecyclerView.ViewHolder {
@@ -863,9 +919,11 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         /** Alpha of the name while the tile is not focused (always_show_names). */
         final float restNameAlpha;
         final boolean overshoot;
+        /** For the zoom at this tile's position (dock or grid). */
+        final AppAdapter adapter;
 
         Holder(View v, TileListener listener, boolean animations, boolean advancedEffects,
-               boolean reducedMotion, float restNameAlpha, boolean overshoot) {
+               boolean reducedMotion, float restNameAlpha, boolean overshoot, AppAdapter adapter) {
             super(v);
             card = v.findViewById(R.id.card);
             cardBackground = card.getBackground();
@@ -878,6 +936,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             this.reducedMotion = reducedMotion;
             this.restNameAlpha = restNameAlpha;
             this.overshoot = overshoot;
+            this.adapter = adapter;
 
             final float density = v.getResources().getDisplayMetrics().density;
             card.setOutlineProvider(new ViewOutlineProvider() {
@@ -901,8 +960,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 view.animate().cancel();
                 banner.animate().cancel();
                 name.animate().cancel();
-                float scale = !animations ? 1f : advancedEffects ? 1.12f : 1.10f;
-                float s = focused ? scale : 1f;
+                float s = focused ? adapter.focusScale(getBindingAdapterPosition()) : 1f;
                 if (!animations) {
                     view.setScaleX(1f);
                     view.setScaleY(1f);
@@ -913,14 +971,11 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     name.setAlpha(focused ? 1f : restNameAlpha);
                     name.setTranslationY(0f);
                 } else if (reducedMotion) {
-                    // A short zoom with no hardware layer: building a layer for so short an animation costs more
-                    // frames than it saves. The name just appears instead of fading.
-                    view.animate().scaleX(s).scaleY(s)
-                            .translationY(focused && advancedEffects ? -4f * density : 0f)
-                            .translationZ(focused && advancedEffects ? 8f * density : 0f)
-                            .setDuration(focused ? Motion.REDUCED_MS : 60)
-                            .setInterpolator(new DecelerateInterpolator())
-                            .start();
+                    // Reduced motion (SPEC section 6): no zoom, the rim and the name just appear.
+                    view.setScaleX(1f);
+                    view.setScaleY(1f);
+                    view.setTranslationY(0f);
+                    view.setTranslationZ(0f);
                     name.setAlpha(focused ? 1f : restNameAlpha);
                     // Same place as the full motion's slide ends: the layout's -6dp is only its starting point, and
                     // left there the name overlaps the zoomed tile.
@@ -930,9 +985,9 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     view.animate().scaleX(s).scaleY(s)
                             .translationY(focused && advancedEffects ? -4f * density : 0f)
                             .translationZ(focused && advancedEffects ? 8f * density : 0f)
-                            .setDuration(advancedEffects ? (focused ? 220 : 170) : (focused ? 260 : 180))
-                            .setInterpolator(focused && !overshoot ? new DecelerateInterpolator(1.5f)
-                                    : new OvershootInterpolator(focused ? (advancedEffects ? 0.7f : 1.6f) : 0f))
+                            .setDuration(advancedEffects ? (focused ? 220 : 170) : (focused ? FOCUS_IN_MS : FOCUS_OUT_MS))
+                            .setInterpolator(focused && overshoot ? new OvershootInterpolator(advancedEffects ? 0.7f : 1.6f)
+                                    : new PathInterpolator(0.2f, 0f, 0f, 1f))
                             .withLayer().start();
                     if (advancedEffects) {
                         banner.animate().scaleX(focused ? 1.035f : 1f).scaleY(focused ? 1.035f : 1f)

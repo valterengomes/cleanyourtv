@@ -39,9 +39,16 @@ public class TileFitTest {
 
     @Test
     public void oneRowUnderATitledDockFits() {
+        // With the LWNGE 152dp design tiles one row under a titled dock fits at the full width-only size.
         int w = AppAdapter.tileWidthPx(INNER, GRID_H, 4, 1, true, true, D);
-        assertTrue(w < AppAdapter.tileWidthPx(INNER, 4, D));
+        assertEquals(AppAdapter.tileWidthPx(INNER, 4, D), w);
         assertTrue(height(w, 1, true) <= GRID_H + 2);
+    }
+
+    @Test
+    public void twoRowsUnderATitledDockShrinkTheTiles() {
+        int w = AppAdapter.tileWidthPx(INNER, GRID_H, 4, 2, true, true, D);
+        assertTrue(w < AppAdapter.tileWidthPx(INNER, 4, D));
     }
 
     @Test
@@ -66,7 +73,8 @@ public class TileFitTest {
 
     @Test
     public void droppingTheTitleGivesBiggerTiles() {
-        assertTrue(AppAdapter.tileWidthPx(INNER, GRID_H, 4, 1, false, true, D)
-                > AppAdapter.tileWidthPx(INNER, GRID_H, 4, 1, true, true, D));
+        // Two rows: where the height is tight enough for the title to cost tile size.
+        assertTrue(AppAdapter.tileWidthPx(INNER, GRID_H, 4, 2, false, true, D)
+                > AppAdapter.tileWidthPx(INNER, GRID_H, 4, 2, true, true, D));
     }
 }

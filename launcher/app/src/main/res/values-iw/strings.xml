@@ -144,5 +144,6 @@
     <string name="race_countdown_minutes">%1$d דק׳</string>
     <string name="race_countdown_hours">%1$d שע׳ %2$d דק׳</string>
     <string name="race_countdown_days">%1$d ימ׳ %2$d שע׳</string>
+    <string name="recent_apps">אפליקציות אחרונות</string>
     <string name="last_opened">פתיחה אחרונה: %1$s</string>
 </resources>

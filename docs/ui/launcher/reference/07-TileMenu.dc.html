@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Launcher tile menu</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#F5F2EC}a:hover{color:#BAB7B0}
+</style>
+</helmet>
+<div class="ll" style="background: #0F1215">
+
+<div class="ll-clockarea">
+<p class="ll-greet">Good evening, Ana</p>
+<div class="ll-clockrow"><p class="ll-clock">21:40</p><p class="ll-date ll-date--beside"><span>Monday</span><small>26 October</small></p></div>
+</div>
+<p class="ll-appname">Prime Video</p>
+<div class="ll-dock">
+<sc-for list="{{dock}}" as="a" hint-placeholder-count="5">
+<div class="ll-banner" style="--tint: {{a.tint}}; --a1: {{a.a1}}; --a2: {{a.a2}}">
+<span class="ll-banner__a"></span><span class="ll-banner__b"></span>
+<span class="ll-banner__name">{{a.name}}</span>
+</div>
+</sc-for>
+</div>
+<p class="ll-gridlabel">Recent apps</p>
+<div class="ll-scrim"></div>
+
+<div class="ll-banner ll-f-rim" style="position: absolute; left: 800px; top: 604px; --tint: #1E3954; --a1: rgba(140,200,255,0.18); --a2: rgba(5,15,30,0.35); --glow: rgba(90,160,230,0.6)">
+<span class="ll-banner__a"></span><span class="ll-banner__b"></span><span class="ll-banner__name">Prime Video</span>
+</div>
+
+<div class="ll-menu" role="menu" aria-label="Prime Video options" style="left: 1148px; top: 420px">
+<div class="ll-menu__head">
+<span class="ll-icontile__icon" style="background: #3A5F8A">P</span>
+<p class="ll-menu__title">Prime Video</p>
+</div>
+<button class="ll-menu__item is-focus" type="button" role="menuitem"><svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12h19"/><path d="M6 8.5L2.5 12 6 15.5"/><path d="M18 8.5l3.5 3.5-3.5 3.5"/></svg>Move</button>
+<button class="ll-menu__item" type="button" role="menuitem"><svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg>Remove from Home</button>
+<button class="ll-menu__item" type="button" role="menuitem"><svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8v.01"/></svg>App info</button>
+</div>
+
+<div class="ll-hints"><span class="ll-hint"><span class="ll-key">OK</span>Choose</span><span class="ll-hint"><span class="ll-key">Back</span>Close</span></div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1920,"height":1080}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      dock: [
+        { name: 'YouTube', tint: '#7D2A27', a1: 'rgba(255,214,200,0.16)', a2: 'rgba(30,6,6,0.30)' },
+        { name: 'Netflix', tint: '#26262D', a1: 'rgba(200,60,60,0.30)', a2: 'rgba(0,0,0,0.35)' },
+        { name: 'Prime Video', tint: '#1E3954', a1: 'rgba(140,200,255,0.18)', a2: 'rgba(5,15,30,0.35)' },
+        { name: 'Spotify', tint: '#1D4632', a1: 'rgba(120,230,160,0.18)', a2: 'rgba(0,20,10,0.35)' },
+        { name: 'Plex', tint: '#4A391A', a1: 'rgba(240,190,80,0.22)', a2: 'rgba(20,12,0,0.35)' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
