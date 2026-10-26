@@ -1917,8 +1917,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
      * scrimPercent of its strength (cinematic_scrim). cinematic_art 0 leaves the artwork out, 0 percent the scrim.
      */
     private void setUpCinematicShelf(int scrimPercent) {
-        heroName.setTextSize(TypedValue.COMPLEX_UNIT_SP, 68f);
-        heroName.setLetterSpacing(-0.025f);
+        // The shelf title (SPEC: 48sp, weight 500) and the compact clock (44sp, weekday 16sp over the date 12sp).
+        heroName.setTextSize(TypedValue.COMPLEX_UNIT_SP, 48f);
+        heroName.setLetterSpacing(-0.01f);
+        compactClock();
         heroMeta.setVisibility(View.INVISIBLE);   // keeps its height, so the name does not jump when it fills in
         heroDots.setVisibility(heroDotsShown ? View.VISIBLE : View.GONE);
         heroArt.setVisibility(heroArtAlpha > 0f ? View.VISIBLE : View.GONE);
@@ -1931,6 +1933,25 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         shade.setAlpha(scrimPercent * 255 / 100);
         scrim.setBackground(shade);
         scrim.setVisibility(View.VISIBLE);
+    }
+
+    /** Cinematic mode's compact clock (docs/ui/launcher board 03): the artwork gets the top of the screen. */
+    private void compactClock() {
+        TextView clock = findViewById(R.id.clock);
+        clock.setTextSize(TypedValue.COMPLEX_UNIT_SP, 44f);
+        TextView ampm = findViewById(R.id.ampm);
+        ampm.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f);
+        ((ViewGroup.MarginLayoutParams) ampm.getLayoutParams()).bottomMargin = Math.round(7 * density);
+        TextView weekday = findViewById(R.id.dateWeekday);
+        if (weekday != null) weekday.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f);
+        TextView date = findViewById(R.id.date);
+        date.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f);
+        ViewGroup.MarginLayoutParams dlp = (ViewGroup.MarginLayoutParams) date.getLayoutParams();
+        // 5dp between the two lines (SPEC section 3), unless the date sits under the clock on its own line.
+        if (dlp.topMargin > 0) dlp.topMargin = Math.round(5 * density);
+        View dateColumn = (View) date.getParent();
+        ViewGroup.MarginLayoutParams clp = (ViewGroup.MarginLayoutParams) dateColumn.getLayoutParams();
+        if (clp.bottomMargin > 0) clp.bottomMargin = Math.round(6 * density);
     }
 
     /**
