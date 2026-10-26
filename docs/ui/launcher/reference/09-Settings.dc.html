@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Launcher settings</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#F5F2EC}a:hover{color:#BAB7B0}
+</style>
+</helmet>
+<div class="ll" style="background: #0F1215">
+
+<div class="ll-screenhead">
+<div>
+<h1>Launcher settings</h1>
+<p>LWNGE launcher · version [X.Y]</p>
+</div>
+</div>
+
+<div class="ll-settings">
+<div class="ll-cats" role="tablist" aria-label="Settings sections">
+<sc-for list="{{cats}}" as="c" hint-placeholder-count="7">
+<button class="ll-cat {{c.cls}}" type="button" role="tab">{{c.name}}</button>
+</sc-for>
+</div>
+
+<div class="ll-rows">
+<p class="ll-rows__title">Look</p>
+<button class="ll-row is-focus" type="button">
+<span class="ll-row__text"><span class="ll-row__title">Focus style</span><span class="ll-row__desc">How the selected tile stands out</span></span>
+<span class="ll-row__value"><svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Rim and glow<svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span>
+</button>
+<button class="ll-row" type="button">
+<span class="ll-row__text"><span class="ll-row__title">Cinematic top shelf</span><span class="ll-row__desc">Fills the top with the focused app's artwork</span></span>
+<span class="ll-switch is-on"></span>
+</button>
+<button class="ll-row" type="button">
+<span class="ll-row__text"><span class="ll-row__title">Apps per row</span><span class="ll-row__desc">Rows below the dock</span></span>
+<span class="ll-row__value"><svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>7<svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span>
+</button>
+<button class="ll-row" type="button">
+<span class="ll-row__text"><span class="ll-row__title">App names</span><span class="ll-row__desc">Shown on tiles in the grid</span></span>
+<span class="ll-switch is-on"></span>
+</button>
+<button class="ll-row" type="button">
+<span class="ll-row__text"><span class="ll-row__title">Animations</span><span class="ll-row__desc">Reduced keeps fades and drops zoom and slide</span></span>
+<span class="ll-row__value"><svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>Full<svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span>
+</button>
+<button class="ll-row" type="button">
+<span class="ll-row__text"><span class="ll-row__title">Dim the background</span><span class="ll-row__desc">Makes text easier to read over photos</span></span>
+<span class="ll-row__value"><svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>35%<svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span>
+</button>
+</div>
+</div>
+
+<div class="ll-hints">
+<span class="ll-hint"><span class="ll-key">◀ ▶</span>Change</span>
+<span class="ll-hint"><span class="ll-key">Back</span>Close</span>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1920,"height":1080}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const names = ['Look', 'Clock area', 'Dock and apps', 'Background', 'Island', 'Screensaver', 'About'];
+    return { cats: names.map((name, i) => ({ name, cls: i === 0 ? 'is-selected' : '' })) };
+  }
+}
+</script>
+</body>
+</html>

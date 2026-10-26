@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Launcher island states</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#F5F2EC}a:hover{color:#BAB7B0}
+.is-wrap{position:absolute;inset:54px 96px;display:flex;flex-direction:column;gap:36px}
+.is-step{display:grid;grid-template-columns:300px minmax(0,1fr);align-items:start;gap:32px}
+.is-step .ll-island{position:relative;top:auto;left:auto;transform:none;justify-self:center}
+.is-lab{display:flex;flex-direction:column;gap:6px;padding-top:14px}
+.is-lab b{font-size:28px;font-weight:500;color:#F5F2EC}
+.is-lab span{font-size:24px;color:#BAB7B0}
+.net{display:grid;grid-template-columns:1.2fr 1fr;gap:16px}
+.net-card{display:flex;flex-direction:column;gap:12px;padding:28px;border-radius:28px;background:#1F2227}
+.net-big{font-size:36px;font-weight:500}
+.net-meta{font-size:24px;color:#BAB7B0}
+.net-bars{display:flex;gap:6px;align-items:flex-end;height:30px}
+.net-bars i{display:block;width:10px;border-radius:3px;background:#6FD39B}
+</style>
+</helmet>
+<div class="ll" style="background: #0F1215">
+<div class="is-wrap">
+
+<div class="is-step">
+<p class="is-lab"><b>1 Rest</b><span>Inputs, network, apps, settings</span></p>
+<span class="ll-island">
+<svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1"/><path d="M3 12h10"/><path d="M10 9l3 3-3 3"/></svg>
+<svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><g transform="translate(0 -1.3)"><path d="M2 8.82a15 15 0 0 1 20 0"/><path d="M5 12.86a10 10 0 0 1 14 0"/><path d="M8.5 16.43a5 5 0 0 1 7 0"/><path d="M12 20h.01"/></g></svg>
+<svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></svg>
+<svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><g transform="translate(12 12) scale(0.96) translate(-12 -12)"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" vector-effect="non-scaling-stroke"/><circle cx="12" cy="12" r="3" vector-effect="non-scaling-stroke"/></g></svg>
+</span>
+</div>
+
+<div class="is-step">
+<p class="is-lab"><b>2 Live activity</b><span>Shows for 8 s, then rests</span></p>
+<span class="ll-island ll-island--live">
+<span class="ll-island__dot"></span>
+<span class="ll-island__txt"><b>PlayStation 5</b> on HDMI 2</span>
+<span class="ll-key">OK</span>
+</span>
+</div>
+
+<div class="is-step">
+<p class="is-lab"><b>3 Focused</b><span>Up from the top row</span></p>
+<span class="ll-island ll-island--peek ll-island--focused">
+<span class="ll-isl-btn is-focus"><svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1"/><path d="M3 12h10"/><path d="M10 9l3 3-3 3"/></svg>Inputs</span>
+<span class="ll-isl-btn"><svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><g transform="translate(0 -1.3)"><path d="M2 8.82a15 15 0 0 1 20 0"/><path d="M5 12.86a10 10 0 0 1 14 0"/><path d="M8.5 16.43a5 5 0 0 1 7 0"/><path d="M12 20h.01"/></g></svg>Wi-Fi</span>
+<span class="ll-isl-btn"><svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></svg>Apps</span>
+<span class="ll-isl-btn"><svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><g transform="translate(12 12) scale(0.96) translate(-12 -12)"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" vector-effect="non-scaling-stroke"/><circle cx="12" cy="12" r="3" vector-effect="non-scaling-stroke"/></g></svg>Settings</span>
+</span>
+</div>
+
+<div class="is-step">
+<p class="is-lab"><b>4 Open</b><span>OK on a shortcut. Back closes.</span></p>
+<div class="ll-island ll-island--open" style="width: 1100px">
+<div class="ll-isl-tabs">
+<span class="ll-isl-btn"><svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1"/><path d="M3 12h10"/><path d="M10 9l3 3-3 3"/></svg>Inputs</span>
+<span class="ll-isl-btn is-active"><svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><g transform="translate(0 -1.3)"><path d="M2 8.82a15 15 0 0 1 20 0"/><path d="M5 12.86a10 10 0 0 1 14 0"/><path d="M8.5 16.43a5 5 0 0 1 7 0"/><path d="M12 20h.01"/></g></svg>Wi-Fi</span>
+<span class="ll-isl-btn"><svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></svg>Apps</span>
+<span class="ll-isl-btn"><svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><g transform="translate(12 12) scale(0.96) translate(-12 -12)"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" vector-effect="non-scaling-stroke"/><circle cx="12" cy="12" r="3" vector-effect="non-scaling-stroke"/></g></svg>Settings</span>
+</div>
+<div class="ll-isl-body">
+<div class="net">
+<div class="net-card">
+<p class="net-meta">Connected over Wi-Fi</p>
+<p class="net-big">[WI-FI NAME]</p>
+<div style="display: flex; gap: 16px; align-items: center"><span class="net-bars"><i style="height: 10px"></i><i style="height: 17px"></i><i style="height: 24px"></i><i style="height: 30px"></i></span><span class="net-meta">Strong signal · 5 GHz</span></div>
+</div>
+<div class="net-card" style="justify-content: space-between">
+<p class="net-meta">Cable</p>
+<p class="net-big" style="font-size: 30px; color: #BAB7B0">Not plugged in</p>
+<button class="ll-menu__item is-focus" type="button" style="height: 72px">Network settings<svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true" style="margin-left: auto"><path d="M9 6l6 6-6 6"/></svg></button>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1920,"height":1080}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

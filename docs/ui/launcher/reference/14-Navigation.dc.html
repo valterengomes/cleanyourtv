@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Launcher remote keys</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#F5F2EC}a:hover{color:#BAB7B0}
+</style>
+</helmet>
+<div class="ll" style="background: #0F1215">
+<div class="ll-sheet" style="gap: 28px">
+<h1>Remote keys and where focus goes</h1>
+<table class="ll-navtable">
+<thead>
+<tr><th>Screen</th><th>Arrows</th><th><span class="ll-key">OK</span></th><th><span class="ll-key">Hold OK</span></th><th><span class="ll-key">Back</span></th><th><span class="ll-key">Home</span></th></tr>
+</thead>
+<tbody>
+<tr><td>Home</td><td>Move between tiles. Up from the dock opens the island tray.</td><td>Open app</td><td>Tile menu</td><td>From recent apps: back to the dock. On the dock: nothing.</td><td>Focus the first favourite</td></tr>
+<tr><td>Island tray</td><td>◀ ▶ between shortcuts. Down closes it.</td><td>Open that panel</td><td>·</td><td>Close; focus back on the dock tile</td><td>Close, first favourite</td></tr>
+<tr><td>Island open</td><td>Tabs on top, Down into the content.</td><td>Switch input, open setting</td><td>·</td><td>Content → tabs → tray → closed</td><td>Close all</td></tr>
+<tr><td>Tile menu</td><td>▲ ▼ through options.</td><td>Choose</td><td>·</td><td>Close; focus stays on the tile</td><td>Close all</td></tr>
+<tr><td>Moving a tile</td><td>◀ ▶ moves it; ▲ ▼ between dock and recents.</td><td>Drop here</td><td>·</td><td>Cancel; tile goes back</td><td>Cancel, Home</td></tr>
+<tr><td>App library</td><td>Grid; Up from the top row reaches the filters.</td><td>Add to / remove from Home</td><td>Open, App info</td><td>Back to the tray, on Apps</td><td>Home, first favourite</td></tr>
+<tr><td>Settings</td><td>▶ from a section into its rows; ◀ ▶ change a value.</td><td>Toggle switch</td><td>·</td><td>Rows → sections → tray, on Settings</td><td>Home, first favourite</td></tr>
+<tr><td>Screensaver</td><td colspan="4">Any key wakes it up and is not passed on: Home comes back with focus where it was.</td><td>Same</td></tr>
+<tr><td>Inside an app</td><td colspan="4">Handled by the app.</td><td>Launcher, focus on the tile that opened the app</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1920,"height":1080}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Launcher first run</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#F5F2EC}a:hover{color:#BAB7B0}
+</style>
+</helmet>
+<div class="ll" style="background: #0F1215">
+<div class="ll-onb">
+
+<div class="ll-onb__left">
+<p class="ll-gridlabel" style="position: static">Welcome to LWNGE</p>
+<h1>Pick your favourites</h1>
+<p>They sit in the dock at the top of your Home. You can change them any time: hold OK on an app.</p>
+<div class="ll-steps">
+<div class="ll-step is-current"><span class="ll-step__n">1</span><span>Favourites<small>Up to 8 apps</small></span></div>
+<div class="ll-step"><span class="ll-step__n">2</span><span>Your name<small>For the greeting on Home</small></span></div>
+<div class="ll-step"><span class="ll-step__n">3</span><span>Photos<small>From the LWNGE app on your computer, or skip</small></span></div>
+</div>
+</div>
+
+<div class="ll-onb__right">
+<div class="ll-onb__bar"><span><b>5 picked</b> · up to 8</span><span class="ll-hint"><span class="ll-key">OK</span>Pick or unpick</span></div>
+<div class="ll-grid" style="position: static; --cols: 4">
+<sc-for list="{{apps}}" as="g" hint-placeholder-count="16">
+<div class="ll-icontile {{g.focus}}" style="--tint: #1C1F24; --icon: {{g.icon}}; --glow: rgba(110,160,230,0.5)">
+<span class="ll-icontile__icon">{{g.l}}</span>
+<span class="ll-icontile__name">{{g.name}}</span>
+<sc-if value="{{g.on}}" hint-placeholder-val="{{false}}"><span class="ll-badge-home" role="img" aria-label="Picked"><svg class="ll-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span></sc-if>
+</div>
+</sc-for>
+</div>
+<div style="display: flex; justify-content: flex-end; gap: 16px">
+<button class="ll-btn ll-btn--ghost" type="button">Skip for now</button>
+<button class="ll-btn" type="button">Continue</button>
+</div>
+</div>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1920,"height":1080}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const list = [
+      ['YouTube', '#9A3430', 1], ['Netflix', '#8A2C30', 1], ['Prime Video', '#3A5F8A', 1], ['Disney+', '#3A5BA8', 0],
+      ['Spotify', '#2E7A50', 1], ['Plex', '#A8822A', 1], ['Twitch', '#6B4FA8', 0], ['Kodi', '#2F7A9A', 0],
+      ['RTP Play', '#8A7A2E', 0], ['Max', '#4A4AA0', 0], ['Steam Link', '#3E5876', 0], ['VLC', '#A8642A', 0],
+      ['Pluto TV', '#7A4A8A', 0], ['MUBI', '#6A5A48', 0], ['Files', '#555B66', 0], ['Browser', '#3B7070', 0]
+    ];
+    return { apps: list.map(([name, icon, on], i) => ({ name, icon, on: !!on, l: name[0], focus: name === 'Twitch' ? 'll-f-rim' : '' })) };
+  }
+}
+</script>
+</body>
+</html>

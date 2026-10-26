@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Launcher home, photo background</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#F5F2EC}a:hover{color:#BAB7B0}
+</style>
+</helmet>
+<div class="ll">
+
+<div class="ll-photo" role="img" aria-label="Background photo: hills at sunset" style="--sky: #3E5A63; --sun: #E9C77B; --far: #2B454C; --near: #182A2F">
+<span class="ll-photo__sun"></span><span class="ll-photo__far"></span><span class="ll-photo__near"></span>
+</div>
+<div class="ll-dimlayer" style="background: rgba(11,12,14,0.38)"></div>
+
+<div class="ll-clockarea">
+<p class="ll-greet">Good evening, Ana</p>
+<p class="ll-clock">21:40</p>
+<p class="ll-date">Monday, 26 October</p>
+</div>
+
+<button class="ll-island ll-island--live" type="button" aria-label="New source on HDMI 2. Press OK to switch">
+<span class="ll-island__dot"></span>
+<span class="ll-island__txt"><b>PlayStation 5</b> on HDMI 2</span>
+<span class="ll-key">OK</span>
+</button>
+
+<p class="ll-appname">Spotify</p>
+<div class="ll-dock">
+<sc-for list="{{dock}}" as="a" hint-placeholder-count="5">
+<div class="ll-banner {{a.focus}}" style="--tint: {{a.tint}}; --a1: {{a.a1}}; --a2: {{a.a2}}; --glow: {{a.glow}}">
+<span class="ll-banner__a"></span><span class="ll-banner__b"></span>
+<span class="ll-banner__name">{{a.name}}</span>
+</div>
+</sc-for>
+</div>
+
+<p class="ll-gridlabel">Recent apps</p>
+<div class="ll-grid" style="--cols: 6">
+<sc-for list="{{grid}}" as="g" hint-placeholder-count="12">
+<div class="ll-icontile" style="--tint: {{g.tint}}; --icon: {{g.icon}}">
+<span class="ll-icontile__icon">{{g.l}}</span>
+<span class="ll-icontile__name">{{g.name}}</span>
+</div>
+</sc-for>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1920,"height":1080}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const dock = [
+      { name: 'YouTube', tint: '#7D2A27', a1: 'rgba(255,214,200,0.16)', a2: 'rgba(30,6,6,0.30)', glow: 'rgba(232,96,84,0.55)', focus: '' },
+      { name: 'Netflix', tint: '#26262D', a1: 'rgba(200,60,60,0.30)', a2: 'rgba(0,0,0,0.35)', glow: 'rgba(200,60,60,0.5)', focus: '' },
+      { name: 'Prime Video', tint: '#1E3954', a1: 'rgba(140,200,255,0.18)', a2: 'rgba(5,15,30,0.35)', glow: 'rgba(90,160,230,0.5)', focus: '' },
+      { name: 'Spotify', tint: '#1D4632', a1: 'rgba(120,230,160,0.18)', a2: 'rgba(0,20,10,0.35)', glow: 'rgba(90,210,140,0.6)', focus: 'll-f-rim' },
+      { name: 'Plex', tint: '#4A391A', a1: 'rgba(240,190,80,0.22)', a2: 'rgba(20,12,0,0.35)', glow: 'rgba(235,175,60,0.5)', focus: '' }
+    ];
+    const g = (name, tint, icon) => ({ name, tint: 'rgba(11,12,14,0.62)', icon, l: name[0] });
+    const grid = [
+      g('Twitch', '', '#6B4FA8'), g('Disney+', '', '#3A5BA8'), g('Kodi', '', '#2F7A9A'),
+      g('RTP Play', '', '#8A7A2E'), g('Steam Link', '', '#3E5876'), g('Files', '', '#555B66'),
+      g('Browser', '', '#3B7070'), g('VLC', '', '#A8642A'), g('Max', '', '#4A4AA0'),
+      g('Pluto TV', '', '#7A4A8A'), g('MUBI', '', '#6A5A48'), g('Moonlight', '', '#4A6278')
+    ];
+    return { dock, grid };
+  }
+}
+</script>
+</body>
+</html>

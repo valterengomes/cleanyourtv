@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Launcher focus states</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#F5F2EC}a:hover{color:#BAB7B0}
+.fs-wrap{position:absolute;inset:54px 96px;display:flex;flex-direction:column;gap:24px}
+.fs-row{display:flex;gap:56px;align-items:flex-start}
+.fs-cell{display:flex;flex-direction:column;gap:20px;align-items:flex-start}
+.fs-h{font-size:24px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:#BAB7B0}
+.fs-stage{height:190px;display:flex;align-items:center;padding:0 16px}
+.fs-move{position:relative}
+.fs-arrow{position:absolute;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:#F5F2EC;color:#0B0C0E}
+.fs-arrow.l{left:-68px}.fs-arrow.r{right:-68px}
+</style>
+</helmet>
+<div class="ll" style="background: #0F1215">
+<div class="fs-wrap">
+<h1 style="font-size: 44px; font-weight: 500">Focus states</h1>
+
+<p class="fs-h">Dock banner, 16:9</p>
+<div class="fs-row">
+<div class="fs-cell"><div class="fs-stage"><div class="ll-banner" style="--tint: #1D4632; --a1: rgba(120,230,160,0.18); --a2: rgba(0,20,10,0.35)"><span class="ll-banner__a"></span><span class="ll-banner__b"></span><span class="ll-banner__name">Spotify</span></div></div><p class="ll-spec"><b>Rest</b> · 152 x 85.5 dp</p></div>
+<div class="fs-cell"><div class="fs-stage"><div class="ll-banner ll-f-rim" style="--tint: #1D4632; --a1: rgba(120,230,160,0.18); --a2: rgba(0,20,10,0.35); --glow: rgba(90,210,140,0.6)"><span class="ll-banner__a"></span><span class="ll-banner__b"></span><span class="ll-banner__name">Spotify</span></div></div><p class="ll-spec"><b>Rim + glow</b> · default</p></div>
+<div class="fs-cell"><div class="fs-stage"><div class="ll-banner ll-f-glass" style="--tint: #1D4632; --a1: rgba(120,230,160,0.18); --a2: rgba(0,20,10,0.35); --glow: rgba(90,210,140,0.5); overflow: visible"><span class="ll-banner__name" style="z-index: 1">Spotify</span></div></div><p class="ll-spec"><b>Glass slab</b></p></div>
+<div class="fs-cell"><div class="fs-stage"><div class="ll-banner ll-f-halo" style="--tint: #1D4632; --a1: rgba(120,230,160,0.18); --a2: rgba(0,20,10,0.35); --glow: rgba(90,210,140,0.32); --glow-solid: #6FD39B"><span class="ll-banner__a"></span><span class="ll-banner__b"></span><span class="ll-banner__name">Spotify</span></div></div><p class="ll-spec"><b>Halo</b></p></div>
+</div>
+
+<div class="fs-row" style="gap: 56px">
+<div class="fs-cell">
+<p class="fs-h">App tile, icon on tint</p>
+<div class="fs-row" style="gap: 48px">
+<div class="fs-cell"><div class="fs-stage" style="height: 170px"><div class="ll-icontile" style="width: 226px; --tint: #1A2C36; --icon: #2F7A9A"><span class="ll-icontile__icon">K</span><span class="ll-icontile__name">Kodi</span></div></div><p class="ll-spec"><b>Rest</b></p></div>
+<div class="fs-cell"><div class="fs-stage" style="height: 170px"><div class="ll-icontile ll-f-rim" style="width: 226px; --tint: #1A2C36; --icon: #2F7A9A; --glow: rgba(70,170,210,0.55)"><span class="ll-icontile__icon">K</span><span class="ll-icontile__name">Kodi</span></div></div><p class="ll-spec"><b>Focus</b> · scale 1.10</p></div>
+<div class="fs-cell"><div class="fs-stage fs-move" style="height: 170px; padding: 0 72px"><div class="ll-icontile ll-f-rim" style="width: 226px; --tint: #1A2C36; --icon: #2F7A9A; --glow: rgba(70,170,210,0.55)"><span class="ll-icontile__icon">K</span><span class="ll-icontile__name">Kodi</span><span class="fs-arrow l"><svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></span><span class="fs-arrow r"><svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></div></div><p class="ll-spec"><b>Moving</b> · ◀ ▶ move, OK drop</p></div>
+</div>
+</div>
+<div class="fs-cell">
+<p class="fs-h">Island</p>
+<div class="fs-row" style="gap: 32px">
+<div class="fs-cell"><div class="fs-stage" style="height: 170px; position: relative; width: 330px">
+<span class="ll-island" style="position: relative; top: auto; left: auto; transform: none">
+<svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1"/><path d="M3 12h10"/><path d="M10 9l3 3-3 3"/></svg>
+<svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><g transform="translate(0 -1.3)"><path d="M2 8.82a15 15 0 0 1 20 0"/><path d="M5 12.86a10 10 0 0 1 14 0"/><path d="M8.5 16.43a5 5 0 0 1 7 0"/><path d="M12 20h.01"/></g></svg>
+<svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></svg>
+<svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><g transform="translate(12 12) scale(0.96) translate(-12 -12)"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" vector-effect="non-scaling-stroke"/><circle cx="12" cy="12" r="3" vector-effect="non-scaling-stroke"/></g></svg>
+</span></div><p class="ll-spec"><b>Rest</b></p></div>
+<div class="fs-cell"><div class="fs-stage" style="height: 170px">
+<span class="ll-island ll-island--peek" style="position: relative; top: auto; left: auto; transform: none">
+<span class="ll-isl-btn is-focus"><svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1"/><path d="M3 12h10"/><path d="M10 9l3 3-3 3"/></svg>Inputs</span>
+</span></div><p class="ll-spec"><b>Focused</b></p></div>
+</div>
+</div>
+</div>
+
+<p class="fs-h">Menus, settings, chips</p>
+<div class="fs-row" style="align-items: center">
+<div class="ll-menu" style="position: relative; width: 460px; padding: 12px">
+<button class="ll-menu__item is-focus" type="button"><svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12h19"/><path d="M6 8.5L2.5 12 6 15.5"/><path d="M18 8.5l3.5 3.5-3.5 3.5"/></svg>Move</button>
+<button class="ll-menu__item" type="button"><svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg>Remove from Home</button>
+</div>
+<div style="width: 700px; display: flex; flex-direction: column; gap: 8px">
+<button class="ll-row is-focus" type="button"><span class="ll-row__text"><span class="ll-row__title">Cinematic top shelf</span><span class="ll-row__desc">Shows the focused app's artwork</span></span><span class="ll-switch is-on"></span></button>
+<button class="ll-row" type="button"><span class="ll-row__text"><span class="ll-row__title">Apps per row</span></span><span class="ll-row__value"><svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>6<svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></button>
+</div>
+<div class="ll-chips" style="flex-direction: column">
+<span class="ll-chip is-focus">On Home</span>
+<span class="ll-chip">A to Z</span>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1920,"height":1080}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

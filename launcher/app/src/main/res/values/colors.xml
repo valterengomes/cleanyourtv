@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- LWNGE launcher redesign tokens (docs/ui/launcher/SPEC.md section 2); the rest are added with the phase that uses them. -->
+<resources>
+    <color name="lw_panel2">#FF1F2227</color>
+    <color name="lw_text">#FFF5F2EC</color>
+    <color name="lw_text2">#FFBAB7B0</color>
+</resources>

@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Launcher edge states</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="./ll.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#F5F2EC}a:hover{color:#BAB7B0}
+.st-small{flex:none;width:220px;height:124px}
+.st-small .ll-banner__name{font-size:26px}
+.st-bigname{font-size:44px;font-weight:500;max-width:440px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+</style>
+</helmet>
+<div class="ll" style="background: #0F1215">
+<div class="ll-sheet">
+<h1>Edge states</h1>
+<div class="ll-cells">
+
+<div class="ll-cell">
+<p class="ll-cell__label"><b>Empty dock</b>OK opens the favourites picker.</p>
+<div class="ll-cell__stage">
+<div class="ll-ghosttile is-focus" style="width: 220px; height: 124px"><svg class="ll-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add favourites</div>
+<div class="ll-ghosttile" style="width: 220px; height: 124px"></div>
+</div>
+</div>
+
+<div class="ll-cell">
+<p class="ll-cell__label"><b>More than 5 favourites</b>The dock slides; the next tile peeks at the edge.</p>
+<div class="ll-cell__stage" style="flex-direction: column; align-items: flex-start; justify-content: center; gap: 24px">
+<div style="display: flex; gap: 28px">
+<div class="ll-banner st-small" style="--tint: #4A391A; --a1: rgba(240,190,80,0.22); --a2: rgba(20,12,0,0.35)"><span class="ll-banner__a"></span><span class="ll-banner__b"></span><span class="ll-banner__name">Plex</span></div>
+<div class="ll-banner st-small ll-f-rim" style="--tint: #1B2440; --a1: rgba(140,170,255,0.18); --a2: rgba(5,10,30,0.35); --glow: rgba(110,140,240,0.5)"><span class="ll-banner__a"></span><span class="ll-banner__b"></span><span class="ll-banner__name">Disney+</span></div>
+<div class="ll-banner st-small" style="--tint: #2A2238; --a1: rgba(170,140,255,0.2); --a2: rgba(10,5,20,0.35)"><span class="ll-banner__a"></span><span class="ll-banner__b"></span><span class="ll-banner__name">Twitch</span></div>
+</div>
+<span class="ll-dots" aria-hidden="true"><i></i><i class="on"></i><i></i></span>
+</div>
+</div>
+
+<div class="ll-cell">
+<p class="ll-cell__label"><b>App without banner art</b>Its icon on a card tinted with the icon's colour.</p>
+<div class="ll-cell__stage">
+<div class="ll-noart ll-f-rim" style="width: 280px; height: 157.5px; --tint: #2B2A1C; --icon: #8A7A2E; --glow: rgba(200,180,80,0.45)"><span class="ll-icontile__icon">R</span><span class="ll-banner__name">RTP Play</span></div>
+</div>
+</div>
+
+<div class="ll-cell">
+<p class="ll-cell__label"><b>Long names</b>Tiles cut with "…". The big focused name gets the full screen width before it cuts.</p>
+<div class="ll-cell__stage" style="flex-direction: column; align-items: flex-start; justify-content: center; gap: 20px">
+<p class="st-bigname">Crunchyroll Anime Plus</p>
+<div class="ll-icontile" style="width: 226px; --tint: #33241A; --icon: #A85A2A"><span class="ll-icontile__icon">C</span><span class="ll-icontile__name">Crunchyroll Anime Plus</span></div>
+</div>
+</div>
+
+<div class="ll-cell">
+<p class="ll-cell__label"><b>No internet</b>The island says so until it reconnects. OK opens Wi-Fi.</p>
+<div class="ll-cell__stage" style="justify-content: center">
+<span class="ll-island ll-island--live" style="position: relative; top: auto; left: auto; transform: none">
+<svg class="ll-ico ll-ico--sm" viewBox="0 0 24 24" aria-hidden="true" style="color: #F0B65A"><g transform="translate(0 -1.3)"><path d="M2 8.82a15 15 0 0 1 20 0"/><path d="M5 12.86a10 10 0 0 1 14 0"/><path d="M8.5 16.43a5 5 0 0 1 7 0"/><path d="M12 20h.01"/></g><path d="M3 3l18 18"/></svg>
+<span class="ll-island__txt"><b>No internet</b></span>
+<span class="ll-key">OK</span>
+</span>
+</div>
+</div>
+
+<div class="ll-cell">
+<p class="ll-cell__label"><b>Still loading</b>Flat placeholders while banners load. No shimmer, no spinners.</p>
+<div class="ll-cell__stage">
+<span class="ll-skel" style="width: 220px; height: 124px"></span>
+<span class="ll-skel" style="width: 220px; height: 124px"></span>
+</div>
+</div>
+
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1920,"height":1080}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
