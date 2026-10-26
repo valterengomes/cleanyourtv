@@ -157,6 +157,30 @@ final class LibraryApps {
         return label != 0 ? label : packageA.compareTo(packageB);
     }
 
+    /** The library's filter chips (docs/ui/launcher board 08): every app, the apps on Home, the apps not on Home. */
+    static final int FILTER_ALL = 0, FILTER_ON_HOME = 1, FILTER_NOT_ON_HOME = 2;
+
+    /** Whether an app shows under the chosen filter. */
+    static boolean shown(int filter, boolean onHome) {
+        return filter == FILTER_ALL || (filter == FILTER_ON_HOME) == onHome;
+    }
+
+    /** The library lists every app A to Z, whether or not it is on Home; ties by package. */
+    static int compareAtoZ(String labelA, String packageA, String labelB, String packageB, Collator collator) {
+        int label = collator.compare(labelA, labelB);
+        return label != 0 ? label : packageA.compareTo(packageB);
+    }
+
+    /**
+     * The card to focus after the list changed: the same app where it is still listed ({@code sameIndex} >= 0),
+     * else the card that now stands where it was; -1 for an empty list.
+     */
+    static int refocus(int sameIndex, int oldIndex, int count) {
+        if (count <= 0) return -1;
+        if (sameIndex >= 0 && sameIndex < count) return sameIndex;
+        return Math.max(0, Math.min(oldIndex, count - 1));
+    }
+
     static Set<String> change(Set<String> saved, String pkg, boolean added) {
         if (!validPackage(pkg)) throw new IllegalArgumentException("Invalid package");
         Set<String> next = new HashSet<>(saved);

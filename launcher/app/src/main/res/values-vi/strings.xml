@@ -96,9 +96,6 @@
     <string name="library_open">Mở</string>
     <string name="library_app_info">Thông tin ứng dụng</string>
     <string name="library_save_failed">Không lưu được lối tắt</string>
-    <string name="library_recent">Mới · Thêm vào màn hình chính</string>
-    <string name="library_hint_add">Bấm để thêm vào màn hình chính · Giữ để xem tùy chọn</string>
-    <string name="library_hint_open">Bấm để mở · Giữ để xem tùy chọn</string>
     <plurals name="library_app_count">
         <item quantity="other">%1$d ứng dụng</item>
     </plurals>

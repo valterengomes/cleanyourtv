@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- "On Home": a cream disc with an ink check (library board 08). -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="@color/lw_cream" />
+        </shape>
+    </item>
+    <item android:drawable="@drawable/lw_ic_check_ink" android:top="2dp" android:bottom="2dp" android:left="2dp" android:right="2dp" />
+</layer-list>

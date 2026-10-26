@@ -311,6 +311,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private boolean reordering;
     /** Key of the tile being carried in reorder mode, or null. */
     private String movingKey;
+    /** Move from the tile menu (board 07): one tile carried; OK puts it down and saves, Back puts everything back. */
+    private boolean moveFromMenu;
+    /** The round ◀ ▶ chips beside the tile carried in that move; created on first use. */
+    private ImageView moveChipStart, moveChipEnd;
     /** Tile order when reorder mode started, to save only when something moved. */
     private List<String> orderAtStart;
     /**
@@ -1337,7 +1341,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                     return true;
                 default:
                     if (ok || back) {
-                        if (!down) drop();
+                        // A move from the tile menu ends with the key: OK keeps the new place, Back the old one.
+                        if (!down && moveFromMenu && back) cancelMove();
+                        else if (!down && moveFromMenu) endReorder();
+                        else if (!down) drop();
                         return true;
                     }
                     return super.dispatchKeyEvent(event);
@@ -1512,7 +1519,66 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     /** Puts the carried tile down where it is; the mode stays on. */
     private void drop() {
         movingKey = null;
+        moveFromMenu = false;
+        hideMoveChips();
         dimOthers();
+    }
+
+    /** Back during a move from the tile menu: the tiles go back to the saved order, focus to the tile that moved. */
+    private void cancelMove() {
+        String key = movingKey;
+        drop();
+        reordering = false;
+        adapter.setReordering(false);
+        glass.setAccent(festive ? festival.accentColor() : 0);
+        btnReorder.setActivated(false);
+        orderAtStart = null;
+        dockInSession = null;
+        reloadTiles();
+        int at = key == null ? -1 : adapter.positionOf(key);
+        if (at >= 0) refocusAfterLayout(at);
+    }
+
+    /** The ◀ ▶ chips 10dp outside the carried tile, centred on it (SPEC section 4, move mode). */
+    private void placeMoveChips(View card) {
+        if (moveChipStart == null) {
+            moveChipStart = moveChip(true);
+            moveChipEnd = moveChip(false);
+        }
+        Rect r = new Rect(0, 0, card.getWidth(), card.getHeight());
+        root.offsetDescendantRectToMyCoords(card, r);
+        float scale = adapter.focusScale(lastFocused);
+        float half = card.getWidth() * scale / 2f, size = 28 * density, gap = 10 * density;
+        boolean rtl = rtlAppGrid;
+        ImageView left = rtl ? moveChipEnd : moveChipStart, right = rtl ? moveChipStart : moveChipEnd;
+        left.setTranslationX(r.exactCenterX() - half - gap - size);
+        right.setTranslationX(r.exactCenterX() + half + gap);
+        for (ImageView chip : new ImageView[]{left, right}) {
+            chip.setTranslationY(r.exactCenterY() - size / 2f);
+            chip.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private ImageView moveChip(boolean start) {
+        ImageView chip = new ImageView(this);
+        chip.setBackgroundResource(R.drawable.lw_move_chip);
+        chip.setImageResource(R.drawable.lw_ic_chevron);
+        chip.setImageTintList(android.content.res.ColorStateList.valueOf(getColor(R.color.lw_ink)));
+        int pad = Math.round(6 * density);
+        chip.setPadding(pad, pad, pad, pad);
+        // The start chip points back: the chevron mirrored, so it reads ◀ in either direction.
+        chip.setScaleX(start != rtlAppGrid ? -1f : 1f);
+        chip.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        chip.setVisibility(View.GONE);
+        int size = Math.round(28 * density);
+        root.addView(chip, new FrameLayout.LayoutParams(size, size));
+        return chip;
+    }
+
+    private void hideMoveChips() {
+        if (moveChipStart == null) return;
+        moveChipStart.setVisibility(View.GONE);
+        moveChipEnd.setVisibility(View.GONE);
     }
 
     /** While a tile is carried, every other tile is dimmed so the carried one stands out; otherwise all are full. */
@@ -1747,6 +1813,15 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             // Scroll just enough so the whole glass (not only the tile) is visible.
             revealRect.set(0, -(int) pad * 2, item.getWidth(), item.getHeight() + (int) pad);
             grid.requestChildRectangleOnScreen(item, revealRect, reducedMotion);
+        }
+        if (moveFromMenu && movingKey != null && movingKey.equals(lastFocusedKey)) {
+            placeMoveChips(card);
+            // Again once a scroll to keep the tile in view has settled.
+            card.postDelayed(() -> {
+                if (moveFromMenu && card.isFocused()) placeMoveChips(card);
+            }, 260);
+        } else {
+            hideMoveChips();
         }
     }
 
@@ -3385,47 +3460,42 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         String pkg = adapter.packageAt(position);
         // Empty dock slots and the Default-home tile carry the launcher's own package: no menu for them.
         if (key == null || pkg == null || pkg.equals(getPackageName())) return;
-        View panel = getLayoutInflater().inflate(R.layout.popup_inputs, root, false);
-        LinearLayout rows = panel.findViewById(R.id.rows);
-        PopupWindow popup = glassPopup(panel, (int) (200 * density));
-        if (dockRow && position < adapter.movableCount()) {
-            boolean inDock = position < COLUMNS;
-            addSettingsMenuRow(rows, popup, inDock ? R.string.tile_replace_in_dock : R.string.tile_add_to_dock,
-                    () -> startDockEditFor(key, inDock));
+        // The LWNGE tile menu (board 07): beside the tile, its app's icon and name on top.
+        LwMenu menu = new LwMenu(this);
+        Drawable appIcon = null;
+        try {
+            appIcon = getPackageManager().getApplicationIcon(pkg);
+        } catch (PackageManager.NameNotFoundException ignored) {
+            // gone since the tiles were built: the menu just has no icon
         }
-        if (position < adapter.movableCount()) addSettingsMenuRow(rows, popup, R.string.tile_move, () -> {
+        menu.header(appIcon, adapter.labelAt(position));
+        if (position < adapter.movableCount()) menu.add(R.drawable.lw_ic_move, R.string.tile_move, () -> {
             if (!beginReorder()) return;
             int at = adapter.positionOf(key);   // beginReorder can rebuild the tiles
             if (at < 0) return;
+            moveFromMenu = true;
             focusTile(at);
             pickUp(at);
-            Toast.makeText(this, R.string.reorder_hint, Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.move_hint, Toast.LENGTH_LONG).show();
         });
-        if (appLibraryEnabled) addSettingsMenuRow(rows, popup, R.string.library_remove_shortcut, () -> {
+        if (dockRow && position < adapter.movableCount()) {
+            boolean inDock = position < COLUMNS;
+            menu.add(R.drawable.lw_ic_apps, inDock ? R.string.tile_replace_in_dock : R.string.tile_add_to_dock,
+                    () -> startDockEditFor(key, inDock));
+        }
+        if (appLibraryEnabled) menu.add(R.drawable.lw_ic_remove, R.string.library_remove_shortcut, () -> {
             if (LibraryApps.save(this, pkg, false)) reloadApps(false);
             else Toast.makeText(this, R.string.library_save_failed, Toast.LENGTH_LONG).show();
         });
         // Some firmware has no App info page at all; a row that only toasts "can't open" helps nobody.
         Intent info = SystemSettings.appInfo(this, pkg);
-        if (info != null) addSettingsMenuRow(rows, popup, R.string.library_app_info, () -> open(info));
-        panel.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-        popup.setWidth(Math.max((int) (200 * density), panel.getMeasuredWidth()));
-        // Dock tiles sit near the bottom of the screen: open the menu above the tile when it would not fit below.
-        int[] at = new int[2];
-        card.getLocationInWindow(at);
-        int gap = (int) (10 * density), height = panel.getMeasuredHeight();
-        if (at[1] + card.getHeight() + gap + height <= root.getHeight()) {
-            dropIn(popup, panel, card, Gravity.START);
-        } else {
-            panel.setAlpha(0f);
-            panel.setPivotY(height);
-            panel.setScaleY(0.92f);
-            panel.setTranslationY(8 * density);
-            popup.showAtLocation(root, Gravity.NO_GRAVITY, at[0], Math.max(0, at[1] - gap - height));
-            panel.animate().alpha(1f).scaleY(1f).translationY(0f).setDuration(220)
-                    .setInterpolator(new android.view.animation.DecelerateInterpolator(1.6f)).start();
-        }
-        rows.getChildAt(0).requestFocus();
+        if (info != null) menu.add(R.drawable.lw_ic_info, R.string.library_app_info, () -> open(info));
+        if (menu.isEmpty()) return;
+        PopupWindow popup = menu.show(card, reducedMotion, null);
+        openPopup = popup;
+        popup.setOnDismissListener(() -> {
+            if (openPopup == popup) openPopup = null;
+        });
     }
 
     private void addSettingsMenuRow(LinearLayout rows, PopupWindow popup, int title, Runnable action) {

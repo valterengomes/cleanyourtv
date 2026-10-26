@@ -93,9 +93,6 @@
     <string name="library_open">Ochish</string>
     <string name="library_app_info">Ilova haqida</string>
     <string name="library_save_failed">Yorliq saqlanmadi</string>
-    <string name="library_recent">Yangi · Bosh ekranga qoʻshish</string>
-    <string name="library_hint_add">Qoʻshish uchun bosing · Variantlar uchun bosib turing</string>
-    <string name="library_hint_open">Ochish uchun bosing · Variantlar uchun bosib turing</string>
     <plurals name="library_app_count">
         <item quantity="one">%1$d ta ilova</item>
         <item quantity="other">%1$d ta ilova</item>
