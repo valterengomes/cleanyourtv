@@ -174,6 +174,53 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private TextView greeting;
     private View clockBlock;
     private View btnInputs;
+    /** The island (config island), standing in for the top bar's pills; null with the classic top bar. */
+    private Island island;
+    /** What the island asks of Home. */
+    private final Island.Host islandHost = new Island.Host() {
+        @Override
+        public boolean collectInputs(Island.InputSink sink) {
+            return MainActivity.this.collectInputs(sink);
+        }
+
+        @Override
+        public void openSourcePanel() {
+            MainActivity.this.openSourcePanel();
+        }
+
+        @Override
+        public void openNetworkSettings() {
+            open(systemIntent(Settings.ACTION_WIFI_SETTINGS));
+        }
+
+        @Override
+        public void openLibrary() {
+            onLibraryRequested();
+            libraryFromTopBar = true;   // closing it goes back to the Apps pill
+        }
+
+        /** The Settings pill's hold-OK menu and the Settings button, as one list. */
+        @Override
+        public void settingsRows(Island.RowSink sink) {
+            sink.add(R.string.launcher_settings, () -> startActivityForResult(
+                    new Intent(MainActivity.this, LauncherSettingsActivity.class), LAUNCHER_SETTINGS_REQUEST));
+            sink.add(R.string.tv_settings, () -> open(systemIntent(Settings.ACTION_SETTINGS)));
+            if (SystemSettings.vendorIntent(MainActivity.this) != null) {
+                sink.add(R.string.native_settings, () -> {
+                    Intent vendor = SystemSettings.vendorIntent(MainActivity.this);
+                    if (vendor != null) open(vendor);
+                });
+            }
+            if (dockRow) sink.add(R.string.dock_edit, MainActivity.this::startDockEdit);
+            sink.add(R.string.reorder, MainActivity.this::toggleReorder);
+            if (moduleCards) sink.add(R.string.module_cards, MainActivity.this::showModuleCards);
+        }
+
+        @Override
+        public void focusDock() {
+            focusTile(singleRow ? lastFocused : lastFocused % COLUMNS);
+        }
+    };
     /** config show_inputs_pill: false keeps the Inputs pill hidden even when the TV has inputs. */
     private boolean showInputsPill = true;
     private TextView btnWifi;
@@ -303,7 +350,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             handler.post(MainActivity.this::updateWifiLabel);
         }
 
-        /** wifi_status_warnings follows validation; signal-strength updates also land here, so skip those. */
+        /** wifi_status_warnings and the island follow validation; signal-strength updates also land here, so skip those. */
         private boolean lastValidated;
 
         @Override
@@ -311,7 +358,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             boolean validated = caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED);
             if (validated == lastValidated) return;
             lastValidated = validated;
-            if (wifiNoInternetTint != null) handler.post(MainActivity.this::updateWifiLabel);
+            if (wifiNoInternetTint != null || island != null) handler.post(MainActivity.this::updateWifiLabel);
         }
     };
     /** Shows the Inputs pill once the TV registers an input: at boot HDMI inputs can appear after Home is shown. */
@@ -324,6 +371,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         @Override
         public void onInputRemoved(String inputId) {
             updateInputsButton();
+        }
+
+        @Override
+        public void onInputStateChanged(String inputId, int state) {
+            if (island != null && state == TvInputManager.INPUT_STATE_CONNECTED) showPluggedIn(inputId);
         }
     };
     /** Listens for any VPN coming up or going down, even one this app's traffic is excluded from. */
@@ -735,7 +787,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 wifiOfflineTint = getColorStateList(R.color.pill_icon_offline);
             }
         }
-        if (cfg.topMenu) {
+        if (cfg.topMenu && !cfg.island) {
             // One gear: Inputs and Wi-Fi move into its dropdown. The Wi-Fi pill stays hidden but keeps its
             // label up to date, which the menu's Wi-Fi row shows.
             showInputsPill = false;
@@ -797,6 +849,14 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             }
         }
         if (festive) applyFestiveSkin((TextView) btnInputs, (TextView) btnSettings);
+        if (cfg.island) {
+            // The island stands in for the top bar's pills. The classic bar stays in the layout, hidden, so the code
+            // that keeps its labels and visibility current keeps working; the island reads them from there.
+            findViewById(R.id.topButtons).setVisibility(View.GONE);
+            island = new Island(this, root, islandHost, animations, reducedMotion);
+            island.setShown(Island.WIFI, cfg.showNetworkPill);
+            island.setShown(Island.APPS, cfg.appLibrary);
+        }
 
         // Hide the glass when focus leaves the tiles.
         getWindow().getDecorView().getViewTreeObserver().addOnGlobalFocusChangeListener((oldF, newF) -> {
@@ -854,6 +914,13 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private boolean openInputsIfAsked(Intent intent) {
         if (intent == null || !ACTION_VIEW_INPUTS.equals(intent.getAction())) return false;
         setIntent(new Intent(Intent.ACTION_MAIN));
+        if (island != null) {
+            // After the first layout, so the island's shape has the bar to grow from.
+            root.post(() -> {
+                if (!isFinishing()) island.open(Island.INPUTS);
+            });
+            return true;
+        }
         View anchor = topMenu ? findViewById(R.id.btnSettings) : btnInputs;
         if (anchor.getVisibility() != View.VISIBLE) return true;
         if (anchor.isLaidOut()) {
@@ -894,6 +961,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (openLauncherSettingsIfAsked(intent)) return;
         if (openInputsIfAsked(intent)) return;
         if (intent == null || !intent.hasCategory(Intent.CATEGORY_HOME)) return;
+        if (island != null) island.collapse();
         grid.scrollToPosition(0);
         lastFocused = 0;
         lastFocusedKey = adapter.getItemCount() > 0 ? adapter.keyAt(0) : null;
@@ -1149,6 +1217,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (cardPrompt != null) cardPrompt.dismiss();
         if (appLibrary != null) appLibrary.close();
         if (openPopup != null) openPopup.dismiss();
+        if (island != null) island.collapse();
     }
 
     @Override
@@ -1585,7 +1654,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             openPopup = null;
             if (libraryFromTopBar) {
                 libraryFromTopBar = false;
-                btnLibraryTop.requestFocus();
+                if (island != null) island.focusPill(Island.APPS);
+                else btnLibraryTop.requestFocus();
                 return;
             }
             libraryFocusPending = true;
@@ -2219,7 +2289,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (singleRow) {
             // One row: Up leaves for the top bar, Down has nowhere to go, and Left/Right walk the whole row,
             // stopping at its two ends (the default focus search scrolls the row to the next tile).
-            if (keyCode == KeyEvent.KEYCODE_DPAD_UP) return false;
+            if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+                if (island == null) return false;
+                island.focusFromDock();
+                return true;
+            }
             if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) return true;
             boolean forward = rtlAppGrid ? keyCode == KeyEvent.KEYCODE_DPAD_LEFT : keyCode == KeyEvent.KEYCODE_DPAD_RIGHT;
             int last = adapter.focusablePosition(count - 1);
@@ -2243,7 +2317,12 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                     rtlAppGrid, keyCode == KeyEvent.KEYCODE_DPAD_LEFT);
         }
         if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
-            if (position < COLUMNS) return false;          // dock row: let focus move to the top bar
+            if (position < COLUMNS) {
+                // Dock row: up to the island's tray, or let focus move to the classic top bar.
+                if (island == null) return false;
+                island.focusFromDock();
+                return true;
+            }
             target = position - COLUMNS;
         } else {
             int lastRowStart = ((count - 1) / COLUMNS) * COLUMNS;
@@ -2310,6 +2389,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
 
     /** The first top-bar button after Inputs that is shown, in bar order (top_bar_apps, the network pill, ...); Settings is always there. */
     private View firstTopButton() {
+        if (island != null) return island.firstPill();
         ViewGroup bar = findViewById(R.id.topButtons);
         for (int i = 0; i < bar.getChildCount(); i++) {
             View button = bar.getChildAt(i);
@@ -2684,6 +2764,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 btnWifi.setCompoundDrawableTintList(tint);
             }
         }
+        if (island != null) island.refreshNetwork();
     }
 
     /** config.xml icon_only_buttons. */
@@ -2783,6 +2864,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private void updateInputsButton() {
         if (!showInputsPill) {
             btnInputs.setVisibility(View.GONE);
+            if (island != null) island.setShown(Island.INPUTS, false);
             return;
         }
         boolean any = liveTvIntent() != null || !sourcePanelService.isEmpty()
@@ -2798,6 +2880,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             }
         }
         btnInputs.setVisibility(any ? View.VISIBLE : View.GONE);
+        if (island != null) island.setShown(Island.INPUTS, any);
     }
 
     /** boot_to_live_tv, or the Open on start app: the first time Home comes up after the TV starts, open that app
@@ -2935,12 +3018,13 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         open(new Intent(inputAction).setDataAndType(uri, "vnd.android.cursor.item/channel"));
     }
 
-    /** Dropdown menu under the Inputs pill: HDMI ports (with connection state), AV and Live TV. */
+    /** Dropdown menu under the Inputs pill: HDMI ports (with connection state), AV and Live TV. The island's Inputs tab with island on. */
     private void showInputs() {
-        // A configured source panel and no Live TV row to offer next to it: the panel is the whole menu.
-        // The BYINTEK U4 needs this, as its TvInputManager lists three HDMI ports and an AV input it doesn't have.
-        List<CoocaaSources.Source> coocaa = coocaaSources ? CoocaaSources.list(this) : Collections.emptyList();
-        if (coocaa.isEmpty() && !sourcePanelService.isEmpty() && liveTvIntent() == null) {
+        if (island != null) {
+            island.open(Island.INPUTS);
+            return;
+        }
+        if (sourcePanelOnly()) {
             openSourcePanel();
             return;
         }
@@ -2955,7 +3039,55 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         // Compact: as wide as the Inputs pill (a touch wider so "HDMI 1" fits), hanging right below it.
         int width = Math.max(anchor.getWidth(), (int) (150 * density));
         final PopupWindow popup = glassPopup(panel, width);
+        collectInputs(new Island.InputSink() {
+            @Override
+            public void add(int iconRes, String title, String device, int state, Runnable action) {
+                // "Apple TV · HDMI 1": the device first, then the port.
+                String label = device == null || device.isEmpty() ? title : device + " \u00B7 " + title;
+                addInputRow(rows, popup, iconRes, label, state, action);
+            }
 
+            @Override
+            public void separator() {
+                addSeparator(rows);
+            }
+
+            @Override
+            public int count() {
+                return rows.getChildCount();
+            }
+        });
+        if (rows.getChildCount() == 0) {
+            Toast.makeText(this, R.string.no_inputs, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Fit the widest row: TVs that report a status on every port (Sony) would otherwise squeeze the names out.
+        panel.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
+        popup.setWidth(Math.max(width, Math.min(panel.getMeasuredWidth(), (int) (360 * density))));
+
+        int alignment = getResources().getBoolean(R.bool.rtl_menu_bar) != underGear ? Gravity.END : Gravity.START;
+        dropIn(popup, panel, anchor, alignment);
+        rows.getChildAt(0).requestFocus();
+    }
+
+    /**
+     * A configured source panel and no Live TV row to offer next to it: the panel is the whole menu.
+     * The BYINTEK U4 needs this, as its TvInputManager lists three HDMI ports and an AV input it doesn't have.
+     */
+    private boolean sourcePanelOnly() {
+        List<CoocaaSources.Source> coocaa = coocaaSources ? CoocaaSources.list(this) : Collections.emptyList();
+        return coocaa.isEmpty() && !sourcePanelService.isEmpty() && liveTvIntent() == null;
+    }
+
+    /**
+     * The TV's sources, in menu order, into {@code sink}: HDMI ports (with connection state), AV and Live TV. Both the
+     * Inputs dropdown and the island's Inputs tab list them from here. False, with nothing listed, when the TV's own
+     * source panel is the whole menu (sourcePanelOnly).
+     */
+    private boolean collectInputs(Island.InputSink sink) {
+        if (sourcePanelOnly()) return false;
+        List<CoocaaSources.Source> coocaa = coocaaSources ? CoocaaSources.list(this) : Collections.emptyList();
         TvInputManager tim = (TvInputManager) getSystemService(TV_INPUT_SERVICE);
         boolean sawNonHdmi = false;
         String tunerId = null;
@@ -3028,7 +3160,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 if (hdmi && !label.toUpperCase(Locale.ROOT).contains("HDMI")) label = "HDMI " + label;
                 CharSequence custom = InputNames.tidy(info.loadCustomLabel(this));
                 boolean named = custom != null && custom.length() > 0 && !custom.toString().equals(label);
-                if (!hdmi && rows.getChildCount() > 0 && !sawNonHdmi) addSeparator(rows);
+                if (!hdmi && sink.count() > 0 && !sawNonHdmi) sink.separator();
                 if (!hdmi) sawNonHdmi = true;
                 List<TvInputInfo> devices = cecDevices.get(info.getId());
                 if (devices != null) {
@@ -3038,29 +3170,28 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                     for (TvInputInfo device : devices) {
                         CharSequence name = InputNames.tidy(device.loadCustomLabel(this));
                         if (name == null || name.length() == 0) name = named ? custom : device.loadLabel(this);
-                        String deviceLabel = name == null || name.length() == 0 ? label : name + " \u00B7 " + label;
                         final String deviceId = device.getId();
                         int state = hdmiStateBogus ? -1 : tim.getInputState(deviceId);
-                        addInputRow(rows, popup, R.drawable.ic_input, deviceLabel, state, () -> openInput(deviceId));
+                        sink.add(R.drawable.ic_input, label, name == null || name.length() == 0 ? null : name.toString(),
+                                state, () -> openInput(deviceId));
                     }
                     continue;
                 }
-                // The name given in Settings > Inputs (e.g. "MacBook Pro") goes first, the port after it.
-                if (named) label = custom + " \u00B7 " + label;
+                // The name given in Settings > Inputs (e.g. "MacBook Pro") goes with the port.
                 final String id = info.getId();
                 // Analog AV jacks have no hotplug detection, and some TVs report them as always connected
                 // (TCL Smart TV Pro G03 says "Connected" with nothing plugged in), so AV rows show no state.
                 int state = !hdmi || hdmiStateBogus ? -1 : tim.getInputState(id);
-                addInputRow(rows, popup, hdmi ? R.drawable.ic_input : R.drawable.ic_av, label, state,
+                sink.add(hdmi ? R.drawable.ic_input : R.drawable.ic_av, label, named ? custom.toString() : null, state,
                         () -> openInput(id));
             }
         }
         // Coocaa OS registers nothing with TvInputManager; com.skyworth.tv lists its sources instead.
-        if (rows.getChildCount() == 0) {
+        if (sink.count() == 0) {
             for (CoocaaSources.Source s : coocaa) {
                 int icon = "HDMI".equals(s.name) ? R.drawable.ic_input
                         : "VOD".equals(s.name) ? R.drawable.ic_livetv : R.drawable.ic_av;
-                addInputRow(rows, popup, icon, s.label, -1, () -> {
+                sink.add(icon, s.label, null, -1, () -> {
                     if (!CoocaaSources.open(this, s)) {
                         Toast.makeText(this, R.string.not_available, Toast.LENGTH_SHORT).show();
                     }
@@ -3068,8 +3199,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             }
         }
         // Nothing to list where there is no TvInputManager: the TV's own source panel switches inputs.
-        if (rows.getChildCount() == 0 && !sourcePanelService.isEmpty()) {
-            addInputRow(rows, popup, R.drawable.ic_input, getString(R.string.inputs), -1, this::openSourcePanel);
+        if (sink.count() == 0 && !sourcePanelService.isEmpty()) {
+            sink.add(R.drawable.ic_input, getString(R.string.inputs), null, -1, this::openSourcePanel);
         }
         Intent liveTv = liveTvIntent();
         if (liveTv != null && tunerId != null) {
@@ -3090,22 +3221,39 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             if (tuned.resolveActivity(getPackageManager()) != null) liveTv = tuned;
         }
         if (liveTv != null) {
-            if (rows.getChildCount() > 0) addSeparator(rows);
+            if (sink.count() > 0) sink.separator();
             final Intent liveTvIntent = liveTv;
-            addInputRow(rows, popup, R.drawable.ic_livetv, getString(R.string.live_tv), -1, () -> open(liveTvIntent));
+            sink.add(R.drawable.ic_livetv, getString(R.string.live_tv), null, -1, () -> open(liveTvIntent));
         }
-        if (rows.getChildCount() == 0) {
-            Toast.makeText(this, R.string.no_inputs, Toast.LENGTH_SHORT).show();
-            return;
+        return true;
+    }
+
+    /**
+     * island: something was plugged into an HDMI port while Home is on screen. The live activity names it ("PlayStation
+     * 5 on HDMI 2") for 8 s; OK on it switches to that input.
+     */
+    private void showPluggedIn(String inputId) {
+        TvInputManager tim = (TvInputManager) getSystemService(TV_INPUT_SERVICE);
+        if (tim == null || !started) return;
+        try {
+            TvInputInfo info = tim.getTvInputInfo(inputId);
+            if (info == null || !info.isPassthroughInput() || info.isHidden(this)) return;
+            TvInputInfo port = info.getParentId() != null ? tim.getTvInputInfo(info.getParentId()) : info;
+            if (port == null || port.getType() != TvInputInfo.TYPE_HDMI) return;
+            if (Integer.valueOf(-1).equals(mappedSource(port.getId()))) return;
+            CharSequence l = port.loadLabel(this);
+            String portLabel = l == null ? port.getId() : l.toString();
+            if (!portLabel.toUpperCase(Locale.ROOT).contains("HDMI")) portLabel = "HDMI " + portLabel;
+            // A CEC device's own name, or the name given to the port in Settings > Inputs.
+            CharSequence device = InputNames.tidy(info.loadCustomLabel(this));
+            if ((device == null || device.length() == 0) && info != port) device = info.loadLabel(this);
+            boolean named = device != null && device.length() > 0 && !device.toString().equals(portLabel);
+            String text = named ? getString(R.string.island_live, device, portLabel)
+                    : getString(R.string.island_live_plain, portLabel);
+            island.showLive(text, () -> openInput(inputId));
+        } catch (RuntimeException ignored) {
+            // A TV whose input service misbehaves just shows no live activity.
         }
-
-        // Fit the widest row: TVs that report a status on every port (Sony) would otherwise squeeze the names out.
-        panel.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-        popup.setWidth(Math.max(width, Math.min(panel.getMeasuredWidth(), (int) (360 * density))));
-
-        int alignment = getResources().getBoolean(R.bool.rtl_menu_bar) != underGear ? Gravity.END : Gravity.START;
-        dropIn(popup, panel, anchor, alignment);
-        rows.getChildAt(0).requestFocus();
     }
 
     private PopupWindow glassPopup(View panel, int width) {

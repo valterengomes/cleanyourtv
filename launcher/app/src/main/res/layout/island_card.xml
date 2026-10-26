@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A card inside the open island: icon, name and a status line; cream with ink text when focused. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_weight="1"
+    android:minHeight="88dp"
+    android:padding="12dp"
+    android:orientation="vertical"
+    android:background="@drawable/lw_island_card"
+    android:focusable="true"
+    android:clickable="true">
+
+    <ImageView
+        android:id="@+id/cardIcon"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:duplicateParentState="true"
+        android:tint="@color/lw_on_cream"
+        android:importantForAccessibility="no" />
+
+    <TextView
+        android:id="@+id/cardKicker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:duplicateParentState="true"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:textColor="@color/lw_on_cream2"
+        android:textSize="12sp"
+        android:fontFamily="@string/font_regular"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/cardName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:duplicateParentState="true"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:textColor="@color/lw_on_cream"
+        android:textSize="16sp"
+        android:fontFamily="@string/font_medium"
+        android:includeFontPadding="false" />
+
+    <!-- The status line; Island puts the signal dot or the Wi-Fi bars in front of it as a compound drawable. -->
+    <TextView
+        android:id="@+id/cardMeta"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:duplicateParentState="true"
+        android:drawablePadding="6dp"
+        android:gravity="center_vertical"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:textColor="@color/lw_on_cream2"
+        android:textSize="12sp"
+        android:fontFamily="@string/font_regular" />
+</LinearLayout>

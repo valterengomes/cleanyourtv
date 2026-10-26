@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A button inside the open island: 42dp (SPEC: menu items), label and chevron, cream when focused. -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="42dp"
+    android:paddingStart="16dp"
+    android:paddingEnd="12dp"
+    android:gravity="center_vertical"
+    android:background="@drawable/lw_island_button"
+    android:textColor="@color/lw_on_cream"
+    android:drawableEnd="@drawable/lw_ic_chevron"
+    android:drawableTint="@color/lw_on_cream"
+    android:textSize="14sp"
+    android:fontFamily="@string/font_medium"
+    android:singleLine="true"
+    android:ellipsize="end"
+    android:focusable="true"
+    android:clickable="true" />

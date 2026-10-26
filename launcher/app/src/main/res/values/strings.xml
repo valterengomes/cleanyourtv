@@ -106,6 +106,27 @@
     <string name="reorder_not_saved">Couldn\'t save the new order</string>
     <string name="app_library">App library</string>
     <string name="recent_apps">Recent apps</string>
+    <!-- The island (LWNGE redesign phase 2) -->
+    <string name="island_apps">Apps</string>
+    <string name="island_wifi_connected">Connected over Wi-Fi</string>
+    <string name="island_not_connected">Not connected</string>
+    <string name="island_no_internet">No internet</string>
+    <string name="island_cable">Cable</string>
+    <string name="island_not_plugged_in">Not plugged in</string>
+    <string name="island_network_settings">Network settings</string>
+    <string name="island_signal_strong">Strong signal</string>
+    <string name="island_signal_good">Good signal</string>
+    <string name="island_signal_fair">Fair signal</string>
+    <string name="island_signal_weak">Weak signal</string>
+    <string name="island_ghz">%1$s GHz</string>
+    <string name="island_switch_hint">Switch to this input</string>
+    <string name="island_close">Close</string>
+    <string name="island_key_ok" translatable="false">OK</string>
+    <string name="island_key_back">Back</string>
+    <!-- Live activity when something is plugged in: "PlayStation 5 on HDMI 2", or "HDMI 2 connected" without a name. -->
+    <string name="island_live">%1$s on %2$s</string>
+    <string name="island_live_plain">%1$s connected</string>
+    <string name="island_library_hint">Every app on this TV, A to Z</string>
     <string name="library_empty">No launchable apps found</string>
     <string name="library_on_home">On Home</string>
     <string name="library_add_home">Add to Home</string>

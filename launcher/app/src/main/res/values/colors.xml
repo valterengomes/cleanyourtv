@@ -4,4 +4,16 @@
     <color name="lw_panel2">#FF1F2227</color>
     <color name="lw_text">#FFF5F2EC</color>
     <color name="lw_text2">#FFBAB7B0</color>
+    <color name="lw_text3">#FF9A978F</color>
+    <color name="lw_ink">#FF0B0C0E</color>
+    <color name="lw_cream">#FFF5F2EC</color>
+    <color name="lw_on_focus2">#FF3B3D42</color>
+    <color name="lw_island">#FF000000</color>
+    <!-- cream 14% and 32% -->
+    <color name="lw_line">#24F5F2EC</color>
+    <color name="lw_line_strong">#52F5F2EC</color>
+    <!-- ink 72%, behind the open island -->
+    <color name="lw_scrim">#B80B0C0E</color>
+    <color name="lw_ok">#FF6FD39B</color>
+    <color name="lw_warn">#FFF0B65A</color>
 </resources>

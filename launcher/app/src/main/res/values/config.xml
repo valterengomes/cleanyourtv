@@ -217,6 +217,10 @@
     <!-- LWNGE redesign: the first grid row holds the non-dock apps opened most recently from Home, under a "Recent apps"
          label; the rest of the grid keeps its order. Can also be set with "recent_row" in a theme. -->
     <bool name="recent_row">true</bool>
+    <!-- LWNGE redesign: the island, one black pill at the top centre holding Inputs, Wi-Fi, Apps and Settings, in place
+         of the top bar's pills. false keeps the classic top bar (and with it top_menu, icon_only_buttons,
+         reorder_button, library_button and top_bar_apps). Can also be set with "island" in a theme. -->
+    <bool name="island">true</bool>
 
     <!-- A name after the greeting: "Mr. Trịnh" shows GOOD MORNING, MR. TRỊNH. Empty: the greeting alone. -->
     <string name="greeting_name" translatable="false"></string>

@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The island (docs/ui/launcher/SPEC.md section 5), added over Home by Island.java when config island is on.
+     IslandShape draws the one black shape behind the bar and the open panel and animates its bounds between them;
+     the bar and the panel themselves have no background. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipChildren="false"
+    android:clipToPadding="false">
+
+    <View
+        android:id="@+id/islandScrim"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/lw_scrim"
+        android:alpha="0"
+        android:visibility="gone"
+        android:importantForAccessibility="no" />
+
+    <com.gathin.tvhome.IslandShape
+        android:id="@+id/islandShape"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no" />
+
+    <!-- Rest: four icons, 19.5dp, 13dp apart. Tray (focused): the same four as labelled pills. -->
+    <LinearLayout
+        android:id="@+id/islandBar"
+        android:layout_width="wrap_content"
+        android:layout_height="38dp"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="27dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="15dp"
+        android:paddingEnd="15dp">
+
+        <TextView
+            android:id="@+id/islandInputs"
+            style="@style/IslandPill"
+            android:text="@string/inputs" />
+
+        <TextView
+            android:id="@+id/islandWifi"
+            style="@style/IslandPill"
+            android:text="@string/wifi" />
+
+        <TextView
+            android:id="@+id/islandApps"
+            style="@style/IslandPill"
+            android:text="@string/island_apps" />
+
+        <TextView
+            android:id="@+id/islandSettings"
+            style="@style/IslandPill"
+            android:text="@string/settings" />
+
+        <!-- Live activity: "PlayStation 5 on HDMI 2" and the OK key, for 8 s after something is plugged in. -->
+        <LinearLayout
+            android:id="@+id/islandLive"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:paddingStart="15dp"
+            android:paddingEnd="4dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:background="@drawable/lw_island_pill"
+            android:focusable="true"
+            android:clickable="true"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="6dp"
+                android:layout_height="6dp"
+                android:src="@drawable/lw_dot"
+                android:importantForAccessibility="no" />
+
+            <TextView
+                android:id="@+id/islandLiveText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"
+                android:maxWidth="320dp"
+                android:singleLine="true"
+                android:ellipsize="end"
+                android:duplicateParentState="true"
+                android:textColor="@color/lw_on_cream"
+                android:textSize="12sp"
+                android:fontFamily="@string/font_medium"
+                android:includeFontPadding="false" />
+
+            <TextView
+                style="@style/IslandKeycap"
+                android:duplicateParentState="true"
+                android:textColor="@color/lw_on_cream"
+                android:text="@string/island_key_ok" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Open: 590dp wide, its tabs on top and the chosen tab's content below. -->
+    <LinearLayout
+        android:id="@+id/islandPanel"
+        android:layout_width="590dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="27dp"
+        android:orientation="vertical"
+        android:padding="10dp"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:id="@+id/islandTabs"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/islandTabInputs"
+                style="@style/IslandPill"
+                android:layout_marginEnd="4dp"
+                android:text="@string/inputs" />
+
+            <TextView
+                android:id="@+id/islandTabWifi"
+                style="@style/IslandPill"
+                android:layout_marginEnd="4dp"
+                android:text="@string/wifi" />
+
+            <TextView
+                android:id="@+id/islandTabApps"
+                style="@style/IslandPill"
+                android:layout_marginEnd="4dp"
+                android:text="@string/island_apps" />
+
+            <TextView
+                android:id="@+id/islandTabSettings"
+                style="@style/IslandPill"
+                android:text="@string/settings" />
+        </LinearLayout>
+
+        <ScrollView
+            android:id="@+id/islandScroll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:clipToPadding="false"
+            android:overScrollMode="never"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/islandContent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp"
+                android:clipToPadding="false"
+                android:clipChildren="false"
+                android:orientation="vertical" />
+        </ScrollView>
+
+        <LinearLayout
+            android:id="@+id/islandHint"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginBottom="4dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                style="@style/IslandKeycap"
+                android:text="@string/island_key_ok" />
+
+            <TextView
+                android:id="@+id/islandHintOk"
+                style="@style/IslandHint"
+                android:text="@string/island_switch_hint" />
+
+            <TextView
+                style="@style/IslandKeycap"
+                android:text="@string/island_key_back" />
+
+            <TextView
+                style="@style/IslandHint"
+                android:text="@string/island_close" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>
