@@ -56,15 +56,16 @@ public class GridNavigationTest {
         }
     }
 
-    @Test public void sparseDockRedirectsEmptySlotsAndKeepsGridRowBoundary() {
+    @Test public void sparseDockSendsEmptySlotsToAddFavouritesAndKeepsGridRowBoundary() {
         int dockApps = 2;
         int columns = 6;
         int gridApps = 12;
         int emptySlots = DockSlots.empty(dockApps, columns, dockApps + gridApps, false);
         int totalSlots = dockApps + gridApps + emptySlots;
         assertEquals("two occupied dock slots leave four empty slots", 4, emptySlots);
+        // The first empty slot is "Add favourites" (docs/ui/launcher board 13); the others send focus to it.
         for (int position = dockApps; position < dockApps + emptySlots; position++) {
-            assertEquals("empty dock position=" + position, dockApps - 1,
+            assertEquals("empty dock position=" + position, dockApps,
                     DockSlots.focusable(position, dockApps, emptySlots));
         }
         assertEquals("occupied dock position remains focused", 0,
@@ -72,27 +73,26 @@ public class GridNavigationTest {
         assertEquals("first grid app remains focused", dockApps + emptySlots,
                 DockSlots.focusable(dockApps + emptySlots, dockApps, emptySlots));
 
+        // MainActivity passes DockSlots.focusEnd as the dock row's count: the row ends after "Add favourites".
+        int dockEnd = DockSlots.focusEnd(dockApps, emptySlots, columns);
+        assertEquals(dockApps + 1, dockEnd);
         for (boolean rtl : new boolean[] {false, true}) {
             boolean dockStartIsLeft = !rtl;
-            assertTrue("dock count=" + dockApps + ", columns=" + columns
+            assertTrue("dock count=" + dockEnd + ", columns=" + columns
                             + ", position=0, rtl=" + rtl + ", direction="
                             + (dockStartIsLeft ? "left" : "right"),
-                    GridNavigation.atHorizontalEdge(0, dockApps, columns, rtl, dockStartIsLeft));
-            assertFalse("dock count=" + dockApps + ", columns=" + columns
+                    GridNavigation.atHorizontalEdge(0, dockEnd, columns, rtl, dockStartIsLeft));
+            assertFalse("dock count=" + dockEnd + ", columns=" + columns
                             + ", position=0, rtl=" + rtl + ", direction="
                             + (dockStartIsLeft ? "right" : "left"),
-                    GridNavigation.atHorizontalEdge(0, dockApps, columns, rtl, !dockStartIsLeft));
-            assertTrue("dock count=" + dockApps + ", columns=" + columns
-                            + ", position=1, rtl=" + rtl + ", direction="
-                            + (dockStartIsLeft ? "right" : "left"),
-                    GridNavigation.atHorizontalEdge(1, dockApps, columns, rtl, !dockStartIsLeft));
-            assertFalse("dock count=" + dockApps + ", columns=" + columns
-                            + ", position=1, rtl=" + rtl + ", direction="
-                            + (dockStartIsLeft ? "left" : "right"),
-                    GridNavigation.atHorizontalEdge(1, dockApps, columns, rtl, dockStartIsLeft));
+                    GridNavigation.atHorizontalEdge(0, dockEnd, columns, rtl, !dockStartIsLeft));
+            assertFalse("the last dock app leads on to Add favourites, rtl=" + rtl,
+                    GridNavigation.atHorizontalEdge(dockApps - 1, dockEnd, columns, rtl, !dockStartIsLeft));
+            assertTrue("Add favourites ends the dock row, rtl=" + rtl,
+                    GridNavigation.atHorizontalEdge(dockApps, dockEnd, columns, rtl, !dockStartIsLeft));
+            assertFalse("Add favourites leads back to the dock apps, rtl=" + rtl,
+                    GridNavigation.atHorizontalEdge(dockApps, dockEnd, columns, rtl, dockStartIsLeft));
 
-            // MainActivity must pass the reduced dock count to keep the outward dock edge here.
-            // This helper contract does not exercise that wiring.
             assertTrue("grid count=" + totalSlots + ", columns=" + columns
                             + ", position=" + columns + ", rtl=" + rtl
                             + ", direction=" + (dockStartIsLeft ? "left" : "right"),

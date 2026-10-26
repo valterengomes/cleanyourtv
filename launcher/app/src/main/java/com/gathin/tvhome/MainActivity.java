@@ -2408,7 +2408,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 return true;
             }
             // In the dock, the last app is the row's end: the empty slots after it take no focus.
-            int rowCount = position < COLUMNS ? Math.min(count, adapter.dockFilled()) : count;
+            int rowCount = position < COLUMNS ? Math.min(count, adapter.dockFocusEnd()) : count;
             return GridNavigation.atHorizontalEdge(position, rowCount, COLUMNS,
                     rtlAppGrid, keyCode == KeyEvent.KEYCODE_DPAD_LEFT);
         }
@@ -2433,6 +2433,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         grid.playSoundEffect(keyCode == KeyEvent.KEYCODE_DPAD_UP
                 ? SoundEffectConstants.NAVIGATION_UP : SoundEffectConstants.NAVIGATION_DOWN);
         return true;
+    }
+
+    /** "Add favourites" on an empty dock place: edit-dock mode, where the owner picks the place and then the app. */
+    @Override public void onAddFavourites() {
+        startDockEdit();
     }
 
     @Override public void onLibraryFocused() {

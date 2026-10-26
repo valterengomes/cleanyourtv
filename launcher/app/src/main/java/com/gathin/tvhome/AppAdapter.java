@@ -14,6 +14,7 @@ import android.graphics.Color;
 import android.graphics.Outline;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
@@ -62,6 +63,8 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         /** Hold OK on a tile: the activity shows the tile menu (move, remove from Home, app info). */
         void onTileLongPress(int position, View card);
         void onLibraryUp();
+        /** OK on the "Add favourites" slot an empty dock place shows (fill_dock false). */
+        void onAddFavourites();
     }
 
     static final class Entry {
@@ -79,6 +82,8 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         int ambient;
         /** uniform_tiles card fill, top and bottom colour; null until sampled from the icon. */
         int[] backdrop;
+        /** An icon tile's card, tinted with the icon's colour (tintedCard); 0 until first drawn. */
+        int tint;
 
         Entry(String label, ComponentName component, Drawable banner, Drawable icon) {
             this(APP, label, component, banner, icon, null, 0);
@@ -480,13 +485,22 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         Holder h = (Holder) holder;
         Entry e = items.get(position);
         if (e.kind == Entry.EMPTY) {
-            // A free dock slot keeps its place in the row and the band, but shows nothing and takes no focus.
-            h.card.setVisibility(View.INVISIBLE);
-            h.card.setFocusable(false);
+            // A free dock slot (docs/ui/launcher board 13): a dashed outline in its place. The first one is "Add
+            // favourites" and takes focus; OK there starts edit-dock mode. The others take no focus.
+            boolean add = position == docked;
+            h.card.setVisibility(View.VISIBLE);
+            h.card.setFocusable(add);
+            h.card.setScaleX(1f);
+            h.card.setScaleY(1f);
+            h.card.setBackgroundResource(R.drawable.lw_empty_slot);
             h.name.setVisibility(View.INVISIBLE);
             h.banner.setImageDrawable(null);
+            h.banner.setVisibility(View.GONE);
             h.icon.setImageDrawable(null);
-            h.card.setOnClickListener(null);
+            h.icon.setVisibility(View.GONE);
+            h.label.setText(add ? ctx.getString(R.string.add_favourites) : null);
+            h.label.setVisibility(add ? View.VISIBLE : View.GONE);
+            h.card.setOnClickListener(add ? v -> listener.onAddFavourites() : null);
             h.card.setOnLongClickListener(null);
             return;
         }
@@ -511,6 +525,10 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         if (uniformTiles && e.banner == null) {
             if (e.backdrop == null) e.backdrop = backdrop(e.icon, ambientColorAt(position));
             h.card.setBackground(new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, e.backdrop));
+        } else if (e.banner == null) {
+            // An app without banner art (docs/ui/launcher board 13): its icon on a card tinted with the icon's colour.
+            if (e.tint == 0) e.tint = tintedCard(ambientColorAt(position));
+            h.card.setBackground(new ColorDrawable(e.tint));
         }
         if (e.banner != null) {
             h.banner.setImageDrawable(e.banner);
@@ -660,6 +678,24 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             if (items.get(i).component.flattenToShortString().equals(key)) return i;
         }
         return -1;
+    }
+
+    /** Where Left/Right stop in the dock row: after "Add favourites" while slots are empty. */
+    int dockFocusEnd() {
+        return DockSlots.focusEnd(docked, emptySlots, dockSize);
+    }
+
+    /**
+     * The card behind an icon tile: the panel2 card with 28% of the icon's colour mixed in, so the tile reads as
+     * that app while the icon stays the brightest thing on it.
+     */
+    static int tintedCard(int color) {
+        int base = 0xFF1F2227;
+        float share = 0.28f;
+        int r = Math.round(((base >> 16) & 0xFF) * (1 - share) + ((color >> 16) & 0xFF) * share);
+        int g = Math.round(((base >> 8) & 0xFF) * (1 - share) + ((color >> 8) & 0xFF) * share);
+        int b = Math.round((base & 0xFF) * (1 - share) + (color & 0xFF) * share);
+        return 0xFF000000 | r << 16 | g << 8 | b;
     }
 
     /** Dock slots that hold an app: the whole dock unless some slots are empty. */
