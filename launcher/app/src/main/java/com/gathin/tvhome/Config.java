@@ -51,7 +51,11 @@ final class Config {
     static final String[] ON_TV_KEYS = {"columns", ROWS_BELOW_DOCK_KEY, "animations", "advanced_effects",
             WALLPAPER_CHOICE_KEY, DOCK_OPACITY_KEY, "glass_style", "cinematic_home", "reduced_motion",
             "always_show_names", "wallpaper_dim", "date_below_clock", "show_greeting", "show_stats", "recent_row",
-            "island", "home_idle_clock_minutes", "home_layout"};
+            "island", "home_idle_clock_minutes", "home_layout", "favourites", "greeting_name"};
+    /** First run's picks (FirstRunActivity): the dock, in the order picked, comma-separated packages. */
+    static final String FAVOURITES_KEY = "favourites";
+    /** First run's name for the greeting. */
+    static final String GREETING_NAME_KEY = "greeting_name";
     /** home_layout's values. */
     static final String LAYOUT_GRID = "grid", LAYOUT_SHELVES = "shelves";
     /**
@@ -629,6 +633,13 @@ final class Config {
         recentRow = choices.getBoolean("recent_row", recentRow);
         island = choices.getBoolean("island", island);
         homeLayout = choices.getString("home_layout", homeLayout);
+        // First run: the favourites picked on the TV are the dock; the name typed there greets.
+        List<String> favourites = FirstRunActivity.splitFavourites(choices.getString(FAVOURITES_KEY, null));
+        if (!favourites.isEmpty()) {
+            dock.clear();
+            dock.addAll(favourites);
+        }
+        if (choices.contains(GREETING_NAME_KEY)) greetingName = choices.getString(GREETING_NAME_KEY, greetingName).trim();
         // An unknown layout keeps the grid.
         if (!LAYOUT_SHELVES.equals(homeLayout)) homeLayout = LAYOUT_GRID;
         int chosenIdle = choices.getInt("home_idle_clock_minutes", -1);

@@ -628,8 +628,9 @@ and a wallpaper.
     press Follow theme, or push the theme again.
   - **Island**: **Classic top bar**, separate pills instead of the island.
   - **Screensaver**: **Clock screensaver**, Off or after 5 to 60 minutes on Home.
-  - **About**: **Follow theme (reset on-TV choices)**, which clears every choice above (pushing or resetting
-    a theme clears them too); **Choose default home**, Android's home picker; and **TV system settings**,
+  - **About**: **Set up again**, first run's three steps (favourites for the dock, your name for the greeting,
+    and where to send photos from); **Follow theme (reset on-TV choices)**, which clears every choice above,
+    the favourites and the name included (pushing or resetting a theme clears them too); **Choose default home**, Android's home picker; and **TV system settings**,
     the TV's own settings page.
 - **Change the default home:** Launcher settings and the optional Default-home tile
   (`show_home_settings_shortcut`) open Android's home picker. Choose the original launcher to stop using
