@@ -44,6 +44,15 @@ final class Config {
     static final String WALLPAPER_CHOICE_KEY = "wallpaper_choice";
     static final String DOCK_OPACITY_KEY = "dock_opacity";
     /**
+     * Every choice Launcher settings saves on the TV. Each overrides the theme until Follow theme clears it, or a
+     * theme push or reset does (syncThemeChoices). Open on start is not one of them: it is the owner's, whatever
+     * the theme.
+     */
+    static final String[] ON_TV_KEYS = {"columns", ROWS_BELOW_DOCK_KEY, "animations", "advanced_effects",
+            WALLPAPER_CHOICE_KEY, DOCK_OPACITY_KEY, "glass_style", "cinematic_home", "reduced_motion",
+            "always_show_names", "wallpaper_dim", "date_below_clock", "show_greeting", "show_stats", "recent_row",
+            "island", "home_idle_clock_minutes"};
+    /**
      * Counts the changes made in Launcher settings. Home remembers the count it was built with and rebuilds on
      * resume when it differs, however the settings were left (see MainActivity#onResume).
      */
@@ -599,6 +608,21 @@ final class Config {
         if (chosenRows >= 0 && chosenRows <= 3) rowsBelow = chosenRows;
         animations = choices.getBoolean("animations", animations);
         advancedEffects = choices.getBoolean("advanced_effects", advancedEffects);
+        // The redesign's settings (Look, Clock area, Dock and apps, Island, Screensaver).
+        String chosenGlass = choices.getString("glass_style", null);
+        if (GLASS_DEFAULT.equals(chosenGlass) || GLASS_RIM.equals(chosenGlass) || GLASS_HALO.equals(chosenGlass)) {
+            glassStyle = chosenGlass;
+        }
+        cinematic = choices.getBoolean("cinematic_home", cinematic);
+        reducedMotion = choices.getBoolean("reduced_motion", reducedMotion);
+        alwaysShowNames = choices.getBoolean("always_show_names", alwaysShowNames);
+        dateBelowClock = choices.getBoolean("date_below_clock", dateBelowClock);
+        showGreeting = choices.getBoolean("show_greeting", showGreeting);
+        showStats = choices.getBoolean("show_stats", showStats);
+        recentRow = choices.getBoolean("recent_row", recentRow);
+        island = choices.getBoolean("island", island);
+        int chosenIdle = choices.getInt("home_idle_clock_minutes", -1);
+        if (chosenIdle >= 0 && chosenIdle <= 1440) idleClockMinutes = chosenIdle;
         File wallpaper = dir != null ? new File(dir, WALLPAPER_NAME) : null;
         if (wallpaper != null && !(wallpaper.isFile() && wallpaper.length() > 0)) wallpaper = null;
         // A theme can also switch the wallpaper off while the file is still there.
@@ -606,6 +630,8 @@ final class Config {
         if (!wallpaperEnabled) wallpaper = null;
         int rotationMinutes = json == null ? 0 : integer(json, "wallpaper_rotation_minutes", 0, 0, 1440);
         int wallpaperDim = json == null ? 0 : integer(json, "wallpaper_dim", 0, 0, 90);
+        int chosenDim = choices.getInt("wallpaper_dim", -1);
+        if (chosenDim >= 0 && chosenDim <= 90) wallpaperDim = chosenDim;
         int dockOpacity = json == null ? 100 : integer(json, "dock_opacity", 100, 30, 100);
         dockOpacity = chosenDockOpacity(choices.getInt(DOCK_OPACITY_KEY, -1), dockOpacity);
         String wallpaperOrder = json == null ? WallpaperRotation.ORDER_SHUFFLE
@@ -687,15 +713,17 @@ final class Config {
             // Existing preferences survive an app upgrade, unless the first launch follows an
             // explicit theme push or reset by the updated tools.
             SharedPreferences.Editor editor = choices.edit();
-            if (!"absent".equals(token)) editor.remove("columns").remove("animations")
-                    .remove("advanced_effects").remove(ROWS_BELOW_DOCK_KEY).remove(WALLPAPER_CHOICE_KEY)
-                    .remove(DOCK_OPACITY_KEY);
+            if (!"absent".equals(token)) clearOnTvChoices(editor);
             editor.putString(THEME_SIGNATURE_KEY, signature).commit();
         } else if (!seen.equals(signature)) {
-            choices.edit().remove("columns").remove("animations").remove("advanced_effects")
-                    .remove(ROWS_BELOW_DOCK_KEY).remove(WALLPAPER_CHOICE_KEY).remove(DOCK_OPACITY_KEY)
-                    .putString(THEME_SIGNATURE_KEY, signature).commit();
+            clearOnTvChoices(choices.edit()).putString(THEME_SIGNATURE_KEY, signature).commit();
         }
+    }
+
+    /** Removes every ON_TV_KEYS choice; the caller commits. */
+    static SharedPreferences.Editor clearOnTvChoices(SharedPreferences.Editor editor) {
+        for (String key : ON_TV_KEYS) editor.remove(key);
+        return editor;
     }
 
     /** The dock band opacity chosen in Launcher settings, or the theme's when none (or an out-of-range one) is saved. */

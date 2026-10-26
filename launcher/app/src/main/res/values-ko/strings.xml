@@ -49,15 +49,11 @@
     <string name="rows_below_dock_label">독 아래 줄 수</string>
     <string name="dock_opacity_label">독 배경 불투명도</string>
     <string name="wallpaper_label">배경화면</string>
-    <string name="wallpaper_state">배경화면: %1$s</string>
     <string name="wallpaper_none">없음</string>
     <string name="wallpaper_applied">배경화면 변경됨</string>
     <string name="wallpaper_theme_default">테마 기본값</string>
-    <string name="animations_state">애니메이션: %1$s</string>
     <string name="advanced_effects">고급 효과</string>
-    <string name="advanced_effects_state">고급 효과: %1$s</string>
     <string name="open_on_start_label">시작 시 열기</string>
-    <string name="open_on_start_state">시작 시 열기: %1$s</string>
     <string name="advanced_effects_warning">타일이 떠오르는 효과, 아이콘 확대, 부드러운 색상 전환을 추가합니다. 메모리 사용량이 늘어날 수 있으며, 실제 차이는 TV에 따라 달라집니다.</string>
     <string name="follow_theme">테마에 맞추기 (TV에서 바꾼 설정 초기화)</string>
     <string name="follow_theme_hint">현재 테마 또는 기본 레이아웃 및 동작 설정을 사용합니다. 테마를 새로 보내거나 초기화하면 TV에서 바꾼 설정도 지워집니다.</string>
@@ -66,7 +62,6 @@
     <string name="quick_network">네트워크</string>
     <string name="quick_apps">앱</string>
     <string name="quick_apps_hint">다시 활성화</string>
-    <string name="on">켜짐</string>
     <string name="off">꺼짐</string>
     <string name="enable">활성화</string>
     <string name="input_key_service_description">리모컨의 입력 버튼을 누르면 입력 전환 화면을 엽니다.</string>

@@ -49,15 +49,11 @@
     <string name="dock_opacity_label">Opacità della barra del dock</string>
     <string name="rows_below_dock_label">Righe sotto il dock</string>
     <string name="wallpaper_label">Sfondo</string>
-    <string name="wallpaper_state">Sfondo: %1$s</string>
     <string name="wallpaper_none">Nessuno</string>
     <string name="wallpaper_applied">Sfondo cambiato</string>
     <string name="wallpaper_theme_default">Predefinito del tema</string>
-    <string name="animations_state">Animazioni: %1$s</string>
     <string name="advanced_effects">Effetti avanzati</string>
-    <string name="advanced_effects_state">Effetti avanzati: %1$s</string>
     <string name="open_on_start_label">Apri all\'avvio</string>
-    <string name="open_on_start_state">Apri all\'avvio: %1$s</string>
     <string name="advanced_effects_warning">Aggiunge riquadro sollevato, zoom dell\'icona e transizioni di colore fluide. Può aumentare l\'uso di memoria; la differenza dipende dalla TV.</string>
     <string name="follow_theme">Segui il tema (azzera le scelte fatte sulla TV)</string>
     <string name="follow_theme_hint">Usa il tema corrente o le impostazioni predefinite di layout e animazioni. Applicare o reimpostare un tema cancella anche le scelte fatte sulla TV.</string>
@@ -66,7 +62,6 @@
     <string name="quick_network">Rete</string>
     <string name="quick_apps">App</string>
     <string name="quick_apps_hint">Riattiva</string>
-    <string name="on">Sì</string>
     <string name="off">No</string>
     <string name="enable">Attiva</string>
     <string name="input_key_service_description">Apre il selettore degli ingressi quando si preme il tasto Input del telecomando.</string>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Launcher settings' sections: ink on the cream focus, text for the open section, text2 for the rest. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true" android:color="@color/lw_ink" />
+    <item android:state_selected="true" android:color="@color/lw_text" />
+    <item android:color="@color/lw_text2" />
+</selector>
