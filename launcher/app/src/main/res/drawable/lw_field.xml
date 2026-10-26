@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A text field (first run's name): panel2, a cream rim while typing. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/lw_panel2" />
+            <stroke android:width="2dp" android:color="@color/lw_cream" />
+            <corners android:radius="14dp" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/lw_panel2" />
+            <corners android:radius="14dp" />
+        </shape>
+    </item>
+</selector>

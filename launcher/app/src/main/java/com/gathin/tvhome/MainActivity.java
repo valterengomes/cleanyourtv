@@ -906,6 +906,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         }
         // Not after recreate(): the launch intent survives it and would open the settings again.
         if (savedInstanceState == null && !openLauncherSettingsIfAsked(getIntent())) openInputsIfAsked(getIntent());
+        // First run (board 12), once, on a TV with no theme.
+        if (savedInstanceState == null && FirstRunActivity.due(this)) startActivity(new Intent(this, FirstRunActivity.class));
     }
 
     /**
@@ -2449,9 +2451,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         return true;
     }
 
-    /** "Add favourites" on an empty dock place: edit-dock mode, where the owner picks the place and then the app. */
+    /** "Add favourites" on an empty dock place: first run's favourites step on its own. */
     @Override public void onAddFavourites() {
-        startDockEdit();
+        startActivity(new Intent(this, FirstRunActivity.class).putExtra(FirstRunActivity.EXTRA_FAVOURITES_ONLY, true));
     }
 
     @Override public void onLibraryFocused() {

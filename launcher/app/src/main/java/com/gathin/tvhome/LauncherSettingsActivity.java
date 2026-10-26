@@ -104,6 +104,13 @@ public final class LauncherSettingsActivity extends Activity {
         sectionList.getChildAt(0).requestFocus();
     }
 
+    /** Back from Set up again (or a picker's page): the rows show what was saved there. */
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (openSection >= 0) refreshRows();
+    }
+
     // ---- the rows -------------------------------------------------------------------------------------------
 
     private void buildSections() {
@@ -199,6 +206,8 @@ public final class LauncherSettingsActivity extends Activity {
         }, null);
         follow.enabled = this::hasOnTvChoices;
         about.rows.add(follow);
+        about.rows.add(action(R.string.set_again, R.string.set_again_hint,
+                () -> startActivity(new Intent(this, FirstRunActivity.class)), null));
         about.rows.add(action(R.string.home_settings, 0, () -> {
             Toast.makeText(this, R.string.home_settings_help, Toast.LENGTH_LONG).show();
             open(new Intent(Settings.ACTION_HOME_SETTINGS));
