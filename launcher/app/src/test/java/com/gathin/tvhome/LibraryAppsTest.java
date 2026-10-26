@@ -143,4 +143,27 @@ public class LibraryAppsTest {
         catch (IllegalArgumentException expected) { }
         assertEquals(LibraryApps.MAX_ADDED, apps.size());
     }
+
+    @Test public void filtersShowTheirApps() {
+        assertTrue(LibraryApps.shown(LibraryApps.FILTER_ALL, true));
+        assertTrue(LibraryApps.shown(LibraryApps.FILTER_ALL, false));
+        assertTrue(LibraryApps.shown(LibraryApps.FILTER_ON_HOME, true));
+        assertFalse(LibraryApps.shown(LibraryApps.FILTER_ON_HOME, false));
+        assertTrue(LibraryApps.shown(LibraryApps.FILTER_NOT_ON_HOME, false));
+        assertFalse(LibraryApps.shown(LibraryApps.FILTER_NOT_ON_HOME, true));
+    }
+
+    @Test public void theLibraryIsAtoZWhateverIsOnHome() {
+        Collator collator = Collator.getInstance(Locale.ENGLISH);
+        assertTrue(LibraryApps.compareAtoZ("apple TV", "b.pkg", "Browser", "a.pkg", collator) < 0);
+        assertTrue(LibraryApps.compareAtoZ("Zattoo", "a.pkg", "YouTube", "b.pkg", collator) > 0);
+        assertTrue(LibraryApps.compareAtoZ("Same", "a.pkg", "Same", "b.pkg", collator) < 0);
+    }
+
+    @Test public void focusStaysWithTheAppOrItsPlace() {
+        assertEquals(4, LibraryApps.refocus(4, 2, 10));
+        assertEquals(2, LibraryApps.refocus(-1, 2, 10));
+        assertEquals(6, LibraryApps.refocus(-1, 7, 7));
+        assertEquals(-1, LibraryApps.refocus(-1, 0, 0));
+    }
 }

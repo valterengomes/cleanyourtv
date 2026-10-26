@@ -127,6 +127,13 @@
     <string name="island_live">%1$s on %2$s</string>
     <string name="island_live_plain">%1$s connected</string>
     <string name="island_library_hint">Every app on this TV, A to Z</string>
+    <!-- The app library (LWNGE redesign phase 3) -->
+    <string name="library_on_home_count">%1$d on Home</string>
+    <string name="library_filter_all">All</string>
+    <string name="library_filter_not_on_home">Not on Home</string>
+    <string name="library_key_hold">Hold OK</string>
+    <string name="library_hold_hint">Open or app info</string>
+    <string name="move_hint">Left and right move it · OK puts it here · Back cancels</string>
     <string name="library_empty">No launchable apps found</string>
     <string name="library_on_home">On Home</string>
     <string name="library_add_home">Add to Home</string>
@@ -134,9 +141,6 @@
     <string name="library_open">Open</string>
     <string name="library_app_info">App info</string>
     <string name="library_save_failed">Could not save the shortcut</string>
-    <string name="library_recent">New · Add to Home</string>
-    <string name="library_hint_add">Press to add to Home · Hold for options</string>
-    <string name="library_hint_open">Press to open · Hold for options</string>
     <plurals name="library_app_count">
         <item quantity="one">%1$d app</item>
         <item quantity="other">%1$d apps</item>

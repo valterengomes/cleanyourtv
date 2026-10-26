@@ -93,9 +93,6 @@
     <string name="library_open">Åpne</string>
     <string name="library_app_info">Appinformasjon</string>
     <string name="library_save_failed">Kunne ikke lagre snarveien</string>
-    <string name="library_recent">Ny · Legg til på startskjermen</string>
-    <string name="library_hint_add">Trykk for å legge til på startskjermen · Hold inne for flere valg</string>
-    <string name="library_hint_open">Trykk for å åpne · Hold inne for flere valg</string>
     <plurals name="library_app_count">
         <item quantity="one">%1$d app</item>
         <item quantity="other">%1$d apper</item>

@@ -95,9 +95,6 @@
     <string name="library_open">Otevřít</string>
     <string name="library_app_info">Informace o aplikaci</string>
     <string name="library_save_failed">Zástupce se nepodařilo uložit</string>
-    <string name="library_recent">Nová · Přidat na domovskou obrazovku</string>
-    <string name="library_hint_add">Stiskem přidáte na domovskou obrazovku · Podržením volby</string>
-    <string name="library_hint_open">Stiskem otevřete · Podržením volby</string>
     <plurals name="library_app_count">
         <item quantity="one">%1$d aplikace</item>
         <item quantity="few">%1$d aplikace</item>
