@@ -1,4 +1,5 @@
-# LWNGE: build CleanYourTV add-ons (upstream Gathin23/cleanyourtv at a pinned commit, unmodified) and publish the
+# LWNGE: build CleanYourTV add-ons (upstream Gathin23/cleanyourtv, plus maxhayim/corner-player, each at a pinned
+# commit, unmodified) and publish the
 # APKs as one release, so the LWNGE dashboard can install them. Runs only when a "lwnge-addons-*" tag is pushed,
 # on Valter's own WSL runner (no GitHub-hosted minutes). Signed with LWNGE's key (secret LWNGE_LAUNCHER_KEYSTORE).
 name: LWNGE add-ons release
@@ -16,7 +17,10 @@ env:
   ADDONS_REPO: Gathin23/cleanyourtv
   ADDONS_COMMIT: 76a9312cd9ac378fc8698f31427805af32c6f965
   # Folder under addons/ = published name (lwnge-<name>.apk).
-  ADDONS: "weather quiet-hours"
+  ADDONS: "weather quiet-hours brightness"
+  # Corner Player lives in its own repo (MIT, by CleanYourTV's @maxhayim); published as lwnge-corner-player.apk.
+  CORNER_REPO: maxhayim/corner-player
+  CORNER_COMMIT: c9c2ad6fd60150b83b5b5b9f6bb7a0eb31b91ee7 # v0.1.0
   # SHA-256 of LWNGE's signing certificate. An APK signed with anything else is refused.
   SIGNER_SHA256: 9e2bf89484e31372691f4855b80a4452977aa25a3381b1541a934532b6ec485e
   # The Gradle wrapper every add-on ships (the same jar as the launcher's, Gradle 8.9).
@@ -28,15 +32,23 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Clean the work folder
-        run: rm -rf src out
+        run: rm -rf src corner out
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: ${{ env.ADDONS_REPO }}
           ref: ${{ env.ADDONS_COMMIT }}
           path: src
           persist-credentials: false
-      - name: Check the source is the pinned commit
-        run: test "$(git -C src rev-parse HEAD)" = "$ADDONS_COMMIT"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ env.CORNER_REPO }}
+          ref: ${{ env.CORNER_COMMIT }}
+          path: corner
+          persist-credentials: false
+      - name: Check the sources are the pinned commits
+        run: |
+          test "$(git -C src rev-parse HEAD)" = "$ADDONS_COMMIT"
+          test "$(git -C corner rev-parse HEAD)" = "$CORNER_COMMIT"
       - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
         with:
           distribution: temurin
@@ -54,18 +66,21 @@ jobs:
         run: |
           test -n "$ANDROID_HOME" || { echo "ANDROID_HOME is not set on this runner"; exit 1; }
           mkdir -p out
-          for a in $ADDONS; do
-            echo "::group::$a"
-            echo "$WRAPPER_SHA256  src/addons/$a/gradle/wrapper/gradle-wrapper.jar" | sha256sum -c -
-            (cd "src/addons/$a" && echo "sdk.dir=$ANDROID_HOME" > local.properties && chmod +x gradlew && \
+          build() {
+            local dir="$1" name="$2"
+            echo "::group::$name"
+            echo "$WRAPPER_SHA256  $dir/gradle/wrapper/gradle-wrapper.jar" | sha256sum -c -
+            (cd "$dir" && echo "sdk.dir=$ANDROID_HOME" > local.properties && chmod +x gradlew && \
               ./gradlew testReleaseUnitTest assembleRelease --no-daemon --console=plain -q \
                 -Pandroid.injected.signing.store.file="$RUNNER_TEMP/lwnge.keystore" \
                 -Pandroid.injected.signing.store.password=android \
                 -Pandroid.injected.signing.key.alias=androiddebugkey \
                 -Pandroid.injected.signing.key.password=android)
-            cp "src/addons/$a/app/build/outputs/apk/release/app-release.apk" "out/lwnge-$a.apk"
+            cp "$dir/app/build/outputs/apk/release/app-release.apk" "out/lwnge-$name.apk"
             echo "::endgroup::"
-          done
+          }
+          for a in $ADDONS; do build "src/addons/$a" "$a"; done
+          build corner corner-player
       - name: Check the signer
         run: |
           APKSIGNER="$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -n 1)"
@@ -89,7 +104,8 @@ jobs:
           repo, tag, token = os.environ["GITHUB_REPOSITORY"], os.environ["GITHUB_REF_NAME"], os.environ["GH_TOKEN"]
           head = {"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json"}
           notes = (f"LWNGE add-ons: {os.environ['ADDONS']} from {os.environ['ADDONS_REPO']} (MIT) at commit "
-                   f"{os.environ['ADDONS_COMMIT']}, unmodified, signed with LWNGE's key. Built on LWNGE's own runner; "
+                   f"{os.environ['ADDONS_COMMIT']}, and corner-player from {os.environ['CORNER_REPO']} (MIT) at commit "
+                   f"{os.environ['CORNER_COMMIT']}, unmodified, signed with LWNGE's key. Built on LWNGE's own runner; "
                    "LWNGE checks each SHA-256 before installing.")
           req = urllib.request.Request(f"https://api.github.com/repos/{repo}/releases", method="POST", headers=head,
                                        data=json.dumps({"tag_name": tag, "name": tag, "body": notes}).encode())
