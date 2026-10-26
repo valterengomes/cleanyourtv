@@ -51,7 +51,9 @@ final class Config {
     static final String[] ON_TV_KEYS = {"columns", ROWS_BELOW_DOCK_KEY, "animations", "advanced_effects",
             WALLPAPER_CHOICE_KEY, DOCK_OPACITY_KEY, "glass_style", "cinematic_home", "reduced_motion",
             "always_show_names", "wallpaper_dim", "date_below_clock", "show_greeting", "show_stats", "recent_row",
-            "island", "home_idle_clock_minutes"};
+            "island", "home_idle_clock_minutes", "home_layout"};
+    /** home_layout's values. */
+    static final String LAYOUT_GRID = "grid", LAYOUT_SHELVES = "shelves";
     /**
      * Counts the changes made in Launcher settings. Home remembers the count it was built with and rebuilds on
      * resume when it differs, however the settings were left (see MainActivity#onResume).
@@ -103,6 +105,8 @@ final class Config {
     final boolean recentRow;
     /** The island: one black pill at the top centre in place of the top bar's pills (config.xml, island). */
     final boolean island;
+    /** Home's layout: LAYOUT_GRID (dock and grid) or LAYOUT_SHELVES (config.xml, home_layout). */
+    final String homeLayout;
     /** Name after the greeting ("Good morning, Mr. Trịnh"); empty for the greeting alone. */
     final String greetingName;
     final boolean moduleCards;
@@ -273,7 +277,7 @@ final class Config {
                    List<RaceWeekend.Race> raceCalendar, boolean cinematicHome, boolean ambientGlow, boolean appGlow, boolean fadeRows, int homeIdleClockMinutes,
                    boolean keyFilter, boolean dockGlass, String glowStyle, boolean wallpaperCaptions,
                    boolean handleViewInputs, boolean tileMenu, boolean dockEvenPadding, boolean dockBand, boolean cinematicDots, boolean cinematicWhiteFocus, boolean wifiStatusColor, int cinematicScrim, int cinematicArt,
-                   Map<String, Set<String>> wallpaperMoods, boolean gamepadPassthrough, boolean consumeVolumeKeys, boolean powerOnHome, boolean wifiStatusWarnings, List<String> topBarApps, boolean showGreeting, boolean headerWhite, boolean clockWallpaper, int clockWallpaperDim, boolean clockGlow, String glassStyle, boolean singleRow, boolean dockBandAll, boolean lunarDate, int lunarUtcOffset, boolean dateBelowClock, boolean recentRow, boolean island) {
+                   Map<String, Set<String>> wallpaperMoods, boolean gamepadPassthrough, boolean consumeVolumeKeys, boolean powerOnHome, boolean wifiStatusWarnings, List<String> topBarApps, boolean showGreeting, boolean headerWhite, boolean clockWallpaper, int clockWallpaperDim, boolean clockGlow, String glassStyle, boolean singleRow, boolean dockBandAll, boolean lunarDate, int lunarUtcOffset, boolean dateBelowClock, boolean recentRow, boolean island, String homeLayout) {
         this.handleViewInputs = handleViewInputs;
         this.tileMenu = tileMenu;
         this.inputKeycodes = inputKeycodes;
@@ -306,6 +310,7 @@ final class Config {
         this.dateBelowClock = dateBelowClock;
         this.recentRow = recentRow;
         this.island = island;
+        this.homeLayout = homeLayout;
         this.greetingName = greetingName;
         this.moduleCards = moduleCards;
         this.reducedMotion = reducedMotion;
@@ -483,6 +488,7 @@ final class Config {
         boolean dateBelowClock = res.getBoolean(R.bool.date_below_clock);
         boolean recentRow = res.getBoolean(R.bool.recent_row);
         boolean island = res.getBoolean(R.bool.island);
+        String homeLayout = res.getString(R.string.home_layout);
         List<String> topBarApps = new ArrayList<>(Arrays.asList(res.getStringArray(R.array.top_bar_apps)));
         boolean showGreeting = res.getBoolean(R.bool.show_greeting);
         boolean headerWhite = res.getBoolean(R.bool.header_white);
@@ -584,6 +590,7 @@ final class Config {
             dateBelowClock = bool(json, "date_below_clock", dateBelowClock);
             recentRow = bool(json, "recent_row", recentRow);
             island = bool(json, "island", island);
+            homeLayout = string(json, "home_layout", homeLayout);
             topBarApps = stringList(json, "top_bar_apps", topBarApps);
             showGreeting = bool(json, "show_greeting", showGreeting);
             headerWhite = bool(json, "header_white", headerWhite);
@@ -621,6 +628,9 @@ final class Config {
         showStats = choices.getBoolean("show_stats", showStats);
         recentRow = choices.getBoolean("recent_row", recentRow);
         island = choices.getBoolean("island", island);
+        homeLayout = choices.getString("home_layout", homeLayout);
+        // An unknown layout keeps the grid.
+        if (!LAYOUT_SHELVES.equals(homeLayout)) homeLayout = LAYOUT_GRID;
         int chosenIdle = choices.getInt("home_idle_clock_minutes", -1);
         if (chosenIdle >= 0 && chosenIdle <= 1440) idleClockMinutes = chosenIdle;
         File wallpaper = dir != null ? new File(dir, WALLPAPER_NAME) : null;
@@ -671,7 +681,7 @@ final class Config {
                 dockBand, cinematicDots, cinematicWhiteFocus, wifiStatusColor, cinematicScrim, cinematicArt, wallpaperMoods, gamepadPassthrough,
                 consumeVolumeKeys, powerOnHome, wifiStatusWarnings, topBarApps, showGreeting, headerWhite, clockWallpaper,
                 Math.max(0, Math.min(90, clockWallpaperDim)), clockGlow, glassStyle, singleRow && dockRow, dockBandAll, lunar, lunarOffset,
-                dateBelowClock, recentRow, island);
+                dateBelowClock, recentRow, island, homeLayout);
     }
 
     /**

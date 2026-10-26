@@ -610,7 +610,8 @@ and a wallpaper.
   `launcher_settings_button` a click opens Launcher settings instead).
 - **Launcher settings** has its sections on the left and the open section's rows on the right: Left/Right
   change a value, OK flips a switch or opens a row, Back goes back to the sections and then out.
-  - **Look**: **Focus style** (Rim and glow, Glass slab or Halo); **Cinematic top shelf**; **Apps per row** 4, 5,
+  - **Look**: **Home layout**, Grid (the dock and the grid) or Shelves (rows by kind of app: Watch, Listen,
+    Play, Tools); **Focus style** (Rim and glow, Glass slab or Halo); **Cinematic top shelf**; **Apps per row** 4, 5,
     6 or 7; **App names** on the tiles; **Animations** Full, Reduced (fades only, no zoom or slide) or Off;
     **Advanced effects** (tile lift, icon zoom and smooth ambient-colour transitions; they may use more
     memory) with full animations; **Dim the background** over photos, 0% to 60%.

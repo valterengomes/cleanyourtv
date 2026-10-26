@@ -560,6 +560,27 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         });
     }
 
+    /** The app tiles on Home (no cards, empty places or the Default-home tile), for the Shelves layout. */
+    List<Entry> homeApps() {
+        List<Entry> apps = new ArrayList<>();
+        for (Entry e : items) if (e.kind == Entry.APP) apps.add(e);
+        return apps;
+    }
+
+    /** The colour a Shelves tile is tinted with: the one Home samples for the same app. */
+    int colorOf(Entry e) {
+        if (e.ambient == 0) {
+            e.ambient = uniformTiles && e.banner == null ? dominantColor(e.icon) : vividColor(e.banner != null ? e.banner : e.icon);
+        }
+        return e.ambient;
+    }
+
+    /** Opens an app as its Home tile would (Shelves layout). */
+    void open(Entry e) {
+        LastOpened.record(ctx, e.pkg);
+        launch(e);
+    }
+
     /** Opens the tile's activity by explicit component, with no extras: a card can name nothing else. */
     private void launch(Entry e) {
         if (e.kind == Entry.HOME_SETTINGS) {
