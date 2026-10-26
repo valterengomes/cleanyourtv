@@ -1,4 +1,4 @@
-# LWNGE: build CleanYourTV's launcher from source at a pinned commit and publish the APK as a release,
+# LWNGE: build the LWNGE-branded launcher (CleanYourTV + LWNGE branding, branch lwnge-brand) at a pinned commit and publish the APK as a release,
 # so LWNGE users do not need Android Studio. Runs only when a "lwnge-launcher-*" tag is pushed.
 # Signed with LWNGE's own stable key (secret LWNGE_LAUNCHER_KEYSTORE), so later releases install as updates.
 name: LWNGE launcher release
@@ -13,7 +13,7 @@ permissions:
   attestations: write
 
 env:
-  LAUNCHER_COMMIT: b7d71e77b6879350f4e1eb27d4e6003932f3b23a
+  LAUNCHER_COMMIT: 0960a45faec8573cbdce5f68c022c0897f33126e
   # SHA-256 of LWNGE's signing certificate. A release signed with anything else is refused.
   SIGNER_SHA256: 9e2bf89484e31372691f4855b80a4452977aa25a3381b1541a934532b6ec485e
 
@@ -69,4 +69,4 @@ jobs:
         run: |
           gh release create "$GITHUB_REF_NAME" lwnge-launcher.apk lwnge-launcher.apk.sha256 \
             --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" \
-            --notes "CleanYourTV launcher built unmodified from commit $LAUNCHER_COMMIT (MIT). Built by GitHub Actions for LWNGE; LWNGE checks the SHA-256 before installing."
+            --notes "LWNGE launcher: CleanYourTV (MIT) with LWNGE branding, built from commit $LAUNCHER_COMMIT. Built by GitHub Actions for LWNGE; LWNGE checks the SHA-256 before installing."
