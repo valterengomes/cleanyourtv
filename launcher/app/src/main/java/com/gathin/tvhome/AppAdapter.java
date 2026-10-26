@@ -567,6 +567,11 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         return apps;
     }
 
+    /** Every place on Home in order, empty dock slots included (HomeExport); a copy. */
+    List<Entry> entries() {
+        return new ArrayList<>(items);
+    }
+
     /** The colour a Shelves tile is tinted with: the one Home samples for the same app. */
     int colorOf(Entry e) {
         if (e.ambient == 0) {

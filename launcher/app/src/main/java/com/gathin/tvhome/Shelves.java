@@ -120,7 +120,27 @@ final class Shelves {
         return labelA.compareToIgnoreCase(labelB);
     }
 
-    private int rowOf(AppAdapter.Entry e, Map<String, Integer> moves, PackageManager pm) {
+    static int title(int shelf) {
+        return TITLES[shelf];
+    }
+
+    /** Home's apps in their rows (Watch, Listen, Play, Tools), each row in its order; a row may be empty. */
+    static List<List<AppAdapter.Entry>> groups(Context ctx, List<AppAdapter.Entry> apps) {
+        Map<String, Integer> moves = decodeMoves(ctx.getSharedPreferences(Config.SETTINGS_NAME, Context.MODE_PRIVATE)
+                .getString(MOVES_KEY, null));
+        PackageManager pm = ctx.getPackageManager();
+        List<List<AppAdapter.Entry>> groups = new ArrayList<>();
+        for (int i = 0; i < TITLES.length; i++) groups.add(new ArrayList<>());
+        for (AppAdapter.Entry e : apps) groups.get(rowOf(e, moves, pm)).add(e);
+        Map<String, Long> opened = new HashMap<>();
+        for (List<AppAdapter.Entry> group : groups) {
+            for (AppAdapter.Entry e : group) opened.put(e.pkg, LastOpened.get(ctx, e.pkg));
+            Collections.sort(group, (a, b) -> compare(opened.get(a.pkg), a.label, opened.get(b.pkg), b.label));
+        }
+        return groups;
+    }
+
+    private static int rowOf(AppAdapter.Entry e, Map<String, Integer> moves, PackageManager pm) {
         Integer moved = moves.get(e.pkg);
         if (moved != null) return moved;
         try {
@@ -135,16 +155,7 @@ final class Shelves {
     /** Rebuilds the rows from Home's app tiles; focus goes back to the app that had it. */
     void update() {
         boolean hadFocus = scroll.hasFocus();
-        Map<String, Integer> moves = decodeMoves(choices.getString(MOVES_KEY, null));
-        PackageManager pm = activity.getPackageManager();
-        List<List<AppAdapter.Entry>> groups = new ArrayList<>();
-        for (int i = 0; i < TITLES.length; i++) groups.add(new ArrayList<>());
-        for (AppAdapter.Entry e : adapter.homeApps()) groups.get(rowOf(e, moves, pm)).add(e);
-        Map<String, Long> opened = new HashMap<>();
-        for (List<AppAdapter.Entry> group : groups) {
-            for (AppAdapter.Entry e : group) opened.put(e.pkg, LastOpened.get(activity, e.pkg));
-            Collections.sort(group, (a, b) -> compare(opened.get(a.pkg), a.label, opened.get(b.pkg), b.label));
-        }
+        List<List<AppAdapter.Entry>> groups = groups(activity, adapter.homeApps());
         rows.removeAllViews();
         boolean firstRow = true;
         for (int i = 0; i < groups.size(); i++) {
