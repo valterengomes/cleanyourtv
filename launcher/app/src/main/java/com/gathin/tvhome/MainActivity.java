@@ -643,6 +643,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                     AnimationUtils.loadAnimation(this, R.anim.tile_enter), 0.06f));
         }
         adapter = new AppAdapter(this, this, COLUMNS, cfg);
+        HomeExport.attach(adapter);
         recentRowOn = cfg.recentRow && dockRow && !singleRow;
         // recent_row: the "Recent apps" label above the first grid row (the adapter moves the recent apps there).
         if (cfg.recentRow && dockRow && !singleRow) grid.addItemDecoration(new RecentLabel(this, adapter, COLUMNS, density));

@@ -8,6 +8,7 @@ import android.os.ParcelFileDescriptor;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.List;
 
 /**
  * Lets tools/theme.sh write the theme files into {@link Config#dir} on firmware where the adb shell is
@@ -18,6 +19,7 @@ import java.io.FileNotFoundException;
  *   content write --uri content://com.gathin.tvhome.theme/wallpapers/dusk.jpg < /data/local/tmp/dusk.jpg
  *   content delete --uri content://com.gathin.tvhome.theme/config.json
  *   content delete --uri content://com.gathin.tvhome.theme/wallpapers      (every image in the collection)
+ *   content read --uri content://com.gathin.tvhome.theme/home.json         (Home's apps, read-only: HomeExport)
  */
 public class ThemeProvider extends ContentProvider {
 
@@ -33,6 +35,11 @@ public class ThemeProvider extends ContentProvider {
 
     @Override
     public ParcelFileDescriptor openFile(Uri uri, String mode) throws FileNotFoundException {
+        List<String> segments = uri.getPathSegments();
+        if (segments.size() == 1 && HomeExport.FILE_NAME.equals(segments.get(0))) {
+            if (mode.contains("w")) throw new FileNotFoundException(String.valueOf(uri));
+            return HomeExport.open(getContext());
+        }
         File f = file(uri);
         if (mode.contains("w")) {
             return ParcelFileDescriptor.open(f, ParcelFileDescriptor.MODE_WRITE_ONLY
