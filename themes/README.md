@@ -59,6 +59,7 @@ A new key needs one there in the same pull request.
 | `rows_below_dock` | 0 to 3 | Grid rows left visible under the dock (1 by default); tiles shrink if the dock, its title and that many rows would not fit the screen height |
 | `dock_title` | bool | The focused dock app's name in large type above the dock (`true`); `false` keeps only the glow |
 | `dock_row` | bool | The dock as its own row with a band (`true`); `false` makes the dock apps the first tiles of one plain grid |
+| `island` | bool | The island: one black pill at the top centre with Inputs, Wi-Fi, Apps and Settings (`true` by default). Up from the dock opens it as a row of pills, OK on one opens a panel with the inputs, the network, the app library or the settings; Back steps out one level. While something new is plugged into an HDMI port it names it for 8 s ("PlayStation 5 on HDMI 2"). `false` keeps the classic top bar, which `top_menu`, `icon_only_buttons`, `icon_only_inputs`, `reorder_button`, `library_button`, `top_bar_apps` and `launcher_settings_button` change |
 | `reorder_button` | bool | A reorder button in the top bar (`false` by default); reordering is always in the Settings button's long-press menu |
 | `show_network_pill` | bool | The Wi-Fi/Ethernet pill in the top bar (`true` by default); `false` hides it |
 | `top_bar_apps` | list of package names | Apps shown as round buttons with their own logo in the top bar, left of the network pill; they leave the grid |

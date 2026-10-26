@@ -145,5 +145,24 @@
     <string name="race_countdown_hours">%1$d שע׳ %2$d דק׳</string>
     <string name="race_countdown_days">%1$d ימ׳ %2$d שע׳</string>
     <string name="recent_apps">אפליקציות אחרונות</string>
+    <!-- The island (LWNGE redesign phase 2) -->
+    <string name="island_apps">אפליקציות</string>
+    <string name="island_wifi_connected">מחובר דרך Wi-Fi</string>
+    <string name="island_not_connected">לא מחובר</string>
+    <string name="island_no_internet">אין אינטרנט</string>
+    <string name="island_cable">כבל</string>
+    <string name="island_not_plugged_in">הכבל לא מחובר</string>
+    <string name="island_network_settings">הגדרות רשת</string>
+    <string name="island_signal_strong">קליטה חזקה</string>
+    <string name="island_signal_good">קליטה טובה</string>
+    <string name="island_signal_fair">קליטה בינונית</string>
+    <string name="island_signal_weak">קליטה חלשה</string>
+    <string name="island_ghz">%1$s GHz</string>
+    <string name="island_switch_hint">מעבר למקור הזה</string>
+    <string name="island_close">סגירה</string>
+    <string name="island_key_back">חזרה</string>
+    <string name="island_live">%1$s ב־%2$s</string>
+    <string name="island_live_plain">%1$s חובר</string>
+    <string name="island_library_hint">כל האפליקציות בטלוויזיה, מא׳ עד ת׳</string>
     <string name="last_opened">פתיחה אחרונה: %1$s</string>
 </resources>

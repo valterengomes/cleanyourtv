@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Signal dot: filled (tinted ok) when a source has a signal, see lw_dot_off for none. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <solid android:color="@color/lw_ok" />
+    <size android:width="6dp" android:height="6dp" />
+</shape>
