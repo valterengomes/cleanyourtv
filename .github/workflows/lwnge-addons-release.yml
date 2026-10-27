@@ -17,13 +17,14 @@ env:
   ADDONS_REPO: Gathin23/cleanyourtv
   ADDONS_COMMIT: 76a9312cd9ac378fc8698f31427805af32c6f965
   # Folder under addons/ = published name (lwnge-<name>.apk).
-  ADDONS: "weather quiet-hours brightness"
+  ADDONS: "weather quiet-hours brightness sleep-timer"
   # Corner Player lives in its own repo (MIT, by CleanYourTV's @maxhayim); published as lwnge-corner-player.apk.
   CORNER_REPO: maxhayim/corner-player
   CORNER_COMMIT: c9c2ad6fd60150b83b5b5b9f6bb7a0eb31b91ee7 # v0.1.0
   # SHA-256 of LWNGE's signing certificate. An APK signed with anything else is refused.
   SIGNER_SHA256: 9e2bf89484e31372691f4855b80a4452977aa25a3381b1541a934532b6ec485e
-  # The Gradle wrapper every add-on ships (the same jar as the launcher's, Gradle 8.9).
+  # The Gradle wrapper every add-on ships (the same jar as the launcher's, Gradle 8.9). An add-on without its own
+  # (Sleep Timer) runs the launcher's wrapper from its gradlew, so that jar is checked instead.
   WRAPPER_SHA256: 498495120a03b9a6ab5d155f5de3c8f0d986a449153702fb80fc80e134484f17
 
 jobs:
@@ -69,7 +70,9 @@ jobs:
           build() {
             local dir="$1" name="$2"
             echo "::group::$name"
-            echo "$WRAPPER_SHA256  $dir/gradle/wrapper/gradle-wrapper.jar" | sha256sum -c -
+            local jar="$dir/gradle/wrapper/gradle-wrapper.jar"
+            [ -f "$jar" ] || jar="src/launcher/gradle/wrapper/gradle-wrapper.jar"
+            echo "$WRAPPER_SHA256  $jar" | sha256sum -c -
             (cd "$dir" && echo "sdk.dir=$ANDROID_HOME" > local.properties && chmod +x gradlew && \
               ./gradlew testReleaseUnitTest assembleRelease --no-daemon --console=plain -q \
                 -Pandroid.injected.signing.store.file="$RUNNER_TEMP/lwnge.keystore" \
