@@ -127,6 +127,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     /** The same opt-in menu is available from either hold-OK or the remote's Menu key. */
     private boolean tileMenuEnabled;
     private String inputAction;
+    private List<String> inputSources;
     private String inputUriScheme;
     private String sourcePanelService;
     private String sourcePanelAction;
@@ -480,6 +481,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         appLibraryEnabled = cfg.appLibrary;
         tileMenuEnabled = cfg.tileMenu;
         inputAction = cfg.inputAction;
+        inputSources = cfg.inputSources;
         inputUriScheme = cfg.inputUriScheme;
         sourcePanelService = cfg.sourcePanelService;
         sourcePanelAction = cfg.sourcePanelAction;
@@ -815,7 +817,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             libraryFromTopBar = true;   // closing it goes back to this button, not to the pill after the last row
         });
         btnLibraryTop.setVisibility(cfg.libraryButton && cfg.appLibrary ? View.VISIBLE : View.GONE);
-        addTopBarApps(cfg.topBarApps);
+        addTopBarApps(cfg.topBarApps, cfg.launchActions);
         iconOnlyButtons = cfg.iconOnlyButtons;
         topMenu = cfg.topMenu;
         wifiIconOnly = iconOnlyButtons && cfg.wifiLabelWidth <= 0;
@@ -976,8 +978,13 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         View anchor = topMenu ? findViewById(R.id.btnSettings) : btnInputs;
         if (anchor.getVisibility() != View.VISIBLE) return true;
         if (anchor.isLaidOut()) {
-            anchor.requestFocus();
-            showInputs();
+            // Android 9 delivers a new intent to a paused activity with a brief resume and pause around it, and
+            // onPause() closes popups, so open the menu once that has run (HiSmartTV A4, Android TV 9).
+            anchor.post(() -> {
+                if (isFinishing() || anchor.getVisibility() != View.VISIBLE) return;
+                anchor.requestFocus();
+                showInputs();
+            });
             return true;
         }
         // Cold start: the popup anchors to the pill (or the gear), so wait for the first layout.
@@ -1950,6 +1957,12 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             }
         } else {
             hero.setY(y);
+            // onPause cancels the fade-ins, and a second Home during one lands on the same tile, which starts none:
+            // finish them, or the shelf and the glow stay dim until focus moves to another app.
+            if (hero.getAlpha() < 1f) hero.animate().alpha(1f).setDuration(260).start();
+            if (ambientGlow && color == ambientColor && ambient.getAlpha() < 1f) {
+                ambient.animate().alpha(1f).setDuration(600).start();
+            }
         }
     }
 
@@ -2585,7 +2598,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
      * Puts each top_bar_apps app in the top bar as a round pill with the app's own logo, left of the network pill.
      * The logo keeps its colours: the pill style's tint, which turns the other icons white, is cleared.
      */
-    private void addTopBarApps(List<String> packages) {
+    private void addTopBarApps(List<String> packages, Map<String, String> launchActions) {
         ViewGroup bar = findViewById(R.id.topButtons);
         PackageManager pm = getPackageManager();
         int size = Math.round(22 * density);
@@ -2593,6 +2606,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             Intent launch = pm.getLeanbackLaunchIntentForPackage(pkg);
             if (launch == null) launch = pm.getLaunchIntentForPackage(pkg);
             if (launch == null) continue;   // not installed, or disabled
+            // Use the same configured launch_actions as tiles; retain the normal entry if unavailable.
+            launch = LaunchActions.select(pkg, launchActions, launch, (targetPackage, action) -> {
+                Intent custom = new Intent(action).setPackage(targetPackage);
+                return pm.resolveActivity(custom, 0) != null ? custom : null;
+            });
             Drawable logo;
             CharSequence label;
             try {
@@ -2788,8 +2806,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
      * nothing animates, so the panel costs the GPU nothing between ticks.
      */
     private void updateRace() {
-        if (raceCalendar.isEmpty()) return;
-        RaceWeekend.State s = RaceWeekend.at(raceCalendar, java.time.Instant.now());
+        // an empty calendar (a theme without race_calendar, or a reset) hides a panel the last theme showed
+        RaceWeekend.State s = raceCalendar.isEmpty() ? null : RaceWeekend.at(raceCalendar, java.time.Instant.now());
         if (s == null) {
             racePanel.setVisibility(View.GONE);
             return;
@@ -3129,20 +3147,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         }
     }
 
-    /** `input_sources` in config.xml: "HW5=23" maps the framework input whose id ends in /HW5 to a vendor
+    /** `input_sources` in config.xml or a theme: "HW5=23" maps the framework input whose id ends in /HW5 to a vendor
      *  source number; "HW8=-" leaves that input out of the Inputs menu (a port the board reports but the set
      *  does not have). Returns the number, -1 for a left-out input, or null when the input is not listed. */
     private Integer mappedSource(String inputId) {
-        if (inputId == null) return null;
-        String hw = inputId.substring(inputId.lastIndexOf('/') + 1);
-        for (String m : getResources().getStringArray(R.array.input_sources)) {
-            int eq = m.indexOf('=');
-            if (eq <= 0 || !m.substring(0, eq).trim().equals(hw)) continue;
-            String v = m.substring(eq + 1).trim();
-            if (v.equals("-")) return -1;
-            try { return Integer.parseInt(v); } catch (NumberFormatException e) { return null; }
-        }
-        return null;
+        return InputSources.mapped(inputSources, inputId);
     }
 
     /** Switches to a passthrough input (HDMI, AV). An input mapped in `input_sources` is opened by sending
