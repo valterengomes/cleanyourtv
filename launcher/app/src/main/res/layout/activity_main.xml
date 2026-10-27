@@ -305,7 +305,8 @@
             </LinearLayout>
 
             <!-- Shown only when show_stats is on. Outside leftBlock, so the top buttons stay level with the clock
-                 row; gone, it takes no space. -->
+                 row; gone, it takes no space. Under the other cities' time when that is on (MainActivity), and
+                 softer than it (alpha), since it is the least important line. -->
             <TextView
                 android:id="@+id/stats"
                 android:layout_width="wrap_content"
@@ -318,18 +319,19 @@
                 android:singleLine="true"
                 android:ellipsize="end"
                 android:textColor="@color/lw_text2"
+                android:alpha="0.6"
                 android:textSize="12sp"
                 android:fontFamily="@string/font_regular"
                 android:letterSpacing="0.02"
                 android:focusable="false"
                 android:visibility="gone" />
 
-            <!-- world_clocks: other cities' time, under the stats line (or the clock when that is off); MainActivity
-                 sets which. Gone, it takes no space. -->
+            <!-- world_clocks: other cities' time, straight under the clock (the stats line goes under it).
+                 Gone, it takes no space. -->
             <TextView
                 android:id="@+id/worldClocks"
                 android:layout_width="wrap_content"
-                android:layout_below="@id/stats"
+                android:layout_below="@id/leftBlock"
                 android:layout_alignStart="@id/leftBlock"
                 android:gravity="left"
                 android:layout_height="wrap_content"

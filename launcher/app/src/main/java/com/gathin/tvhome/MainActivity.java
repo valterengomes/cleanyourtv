@@ -555,9 +555,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         worldClockIds = cfg.worldClocks;
         worldClocks = findViewById(R.id.worldClocks);
         if (!worldClockIds.isEmpty()) {
-            // Under the stats line, or straight under the clock when that line is off.
-            RelativeLayout.LayoutParams wlp = (RelativeLayout.LayoutParams) worldClocks.getLayoutParams();
-            wlp.addRule(RelativeLayout.BELOW, cfg.showStats ? R.id.stats : R.id.leftBlock);
+            // Straight under the clock; the stats line moves under the cities.
+            RelativeLayout.LayoutParams slp = (RelativeLayout.LayoutParams) stats.getLayoutParams();
+            slp.addRule(RelativeLayout.BELOW, R.id.worldClocks);
             worldClocks.setVisibility(View.VISIBLE);
         }
         raceCalendar = cfg.raceCalendar;
