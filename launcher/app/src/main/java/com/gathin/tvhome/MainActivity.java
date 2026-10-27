@@ -244,6 +244,17 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private TextView raceKicker, raceHeadline, raceSessions;
     /** config.xml show_stats, overridable by a theme. Off: the line is gone and nothing is read. */
     private boolean showStats;
+    /** world_clocks: other cities' time under the clock, redrawn on each minute (WorldClocks). */
+    private List<String> worldClockIds = Collections.emptyList();
+    private TextView worldClocks;
+    private final Runnable worldClockTick = new Runnable() {
+        @Override
+        public void run() {
+            updateWorldClocks();
+            // On the minute, like the big clock.
+            handler.postDelayed(this, MINUTE_MS - System.currentTimeMillis() % MINUTE_MS + 50);
+        }
+    };
     private boolean shamsi;
     /** greeting_name: said after the greeting, which is shown in capitals. */
     private String greetingName = "";
@@ -418,6 +429,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         @Override
         public void onReceive(Context context, Intent intent) {
             updateClockVisibility();
+            updateWorldClocks();
         }
     };
     private final Runnable minuteTick = new Runnable() {
@@ -538,6 +550,14 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         btnWifi = findViewById(R.id.btnWifi);
         shamsiDate = findViewById(R.id.shamsiDate);
         stats = findViewById(R.id.stats);
+        worldClockIds = cfg.worldClocks;
+        worldClocks = findViewById(R.id.worldClocks);
+        if (!worldClockIds.isEmpty()) {
+            // Under the stats line, or straight under the clock when that line is off.
+            RelativeLayout.LayoutParams wlp = (RelativeLayout.LayoutParams) worldClocks.getLayoutParams();
+            wlp.addRule(RelativeLayout.BELOW, cfg.showStats ? R.id.stats : R.id.leftBlock);
+            worldClocks.setVisibility(View.VISIBLE);
+        }
         raceCalendar = cfg.raceCalendar;
         racePanel = findViewById(R.id.racePanel);
         raceKicker = findViewById(R.id.raceKicker);
@@ -1066,6 +1086,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             pillsShown = true;
         }
         if (showStats) startStats();
+        if (!worldClockIds.isEmpty()) worldClockTick.run();
         sky.update();
         wallpaperPlayer.start();
         handler.postDelayed(minuteTick, MINUTE_MS);
@@ -1243,6 +1264,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         ambient.animate().cancel();
         heroArt.animate().cancel();
         handler.removeCallbacks(minuteTick);
+        handler.removeCallbacks(worldClockTick);
         stopStats();
         if (diya != null) diya.stop();
         cancelPendingFocusScroll();
@@ -2266,6 +2288,12 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 if (statsBg == bg) bg.postDelayed(this, STATS_MS);
             }
         });
+    }
+
+    private void updateWorldClocks() {
+        if (worldClockIds.isEmpty()) return;
+        worldClocks.setText(WorldClocks.line(worldClockIds, java.time.ZonedDateTime.now(),
+                android.text.format.DateFormat.is24HourFormat(this), Locale.getDefault()));
     }
 
     private void stopStats() {

@@ -324,6 +324,26 @@
                 android:focusable="false"
                 android:visibility="gone" />
 
+            <!-- world_clocks: other cities' time, under the stats line (or the clock when that is off); MainActivity
+                 sets which. Gone, it takes no space. -->
+            <TextView
+                android:id="@+id/worldClocks"
+                android:layout_width="wrap_content"
+                android:layout_below="@id/stats"
+                android:layout_alignStart="@id/leftBlock"
+                android:gravity="left"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="2dp"
+                android:layout_marginTop="4dp"
+                android:singleLine="true"
+                android:ellipsize="end"
+                android:textColor="@color/lw_text2"
+                android:textSize="12sp"
+                android:fontFamily="@string/font_regular"
+                android:letterSpacing="0.02"
+                android:focusable="false"
+                android:visibility="gone" />
+
             <LinearLayout
                 android:id="@+id/topButtons"
                 android:layout_width="wrap_content"

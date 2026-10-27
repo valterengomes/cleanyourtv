@@ -297,6 +297,11 @@
          They leave the grid. Missing apps are skipped. Can also be set with "top_bar_apps" in a theme. -->
     <string-array name="top_bar_apps" translatable="false">
     </string-array>
+    <!-- Other cities' time on one quiet line under the clock (and the stats line), e.g. "London 21:30  ·  Tokyo 06:30 +1":
+         up to three IANA time zone ids such as Europe/London. Ids the TV does not know are skipped. Can also be set
+         with "world_clocks" in a theme. -->
+    <string-array name="world_clocks" translatable="false">
+    </string-array>
     <!-- The Inputs pill in the top bar, shown when the TV has inputs to list. false hides it for good; what the
          remote's Input button does is unchanged. Can also be set with "show_inputs_pill" in a theme. -->
     <bool name="show_inputs_pill">true</bool>
