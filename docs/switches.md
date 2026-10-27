@@ -38,6 +38,7 @@ fits the rules; keys from before the rule sit on its wanted list until a screens
 | `consume_volume_keys` | <img src="switches/consume_volume_keys.jpg" width="320" alt="consume_volume_keys on a TV"> |
 | `wifi_status_warnings` | <img src="switches/wifi_status_warnings.jpg" width="320" alt="wifi_status_warnings on a TV"> |
 | `top_bar_apps` | <img src="switches/top_bar_apps.jpg" width="320" alt="top_bar_apps on a TV"> |
+| `world_clocks` | <img src="switches/world_clocks.jpg" width="320" alt="world_clocks on a TV"> |
 | `show_greeting` | <img src="switches/show_greeting.jpg" width="320" alt="show_greeting on a TV"> |
 | `header_white` | <img src="switches/header_white.jpg" width="320" alt="header_white on a TV"> |
 | `clock_wallpaper` | <img src="switches/clock_wallpaper.jpg" width="320" alt="clock_wallpaper on a TV"> |
