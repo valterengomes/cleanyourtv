@@ -248,6 +248,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     /** world_clocks: other cities' time under the clock, redrawn on each minute (WorldClocks). */
     private List<String> worldClockIds = Collections.emptyList();
     private TextView worldClocks;
+    /** date_below_clock: the date line sits under the clock, so the line below keeps its own margin (tightenClock). */
+    private boolean dateBelowClock;
     private final Runnable worldClockTick = new Runnable() {
         @Override
         public void run() {
@@ -584,6 +586,18 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         ((TextView) findViewById(R.id.clock)).addTextChangedListener(realign);
         ((TextView) findViewById(R.id.greeting)).addTextChangedListener(realign);
         if (cfg.dateBelowClock) moveDateBelowClock();
+        dateBelowClock = cfg.dateBelowClock;
+        if (!getResources().getBoolean(R.bool.rtl_menu_bar)) {
+            // Again on each layout (a new size, compactClock) and each AM/PM change (12- or 24-hour time).
+            findViewById(R.id.clock).addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> tightenClock());
+            ((TextView) findViewById(R.id.ampm)).addTextChangedListener(new TextWatcher() {
+                @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+                @Override public void onTextChanged(CharSequence s, int start, int before, int count) { }
+                @Override public void afterTextChanged(Editable s) {
+                    tightenClock();
+                }
+            });
+        }
         if (shamsi) {
             shamsiDate.setVisibility(View.VISIBLE);
             TextView date = findViewById(R.id.date);
@@ -2029,6 +2043,53 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         float textInk = 2 * density + (greet != null && greet.getVisibility() == View.VISIBLE && greet.length() > 0
                 ? inkLeft(greet) : 0f);
         clock.setTranslationX(textInk - clockInk);
+    }
+
+    /**
+     * The clock area's spacing (left-to-right layout): AM/PM 4dp after the minutes with its top level with the
+     * digits' top, and no gap for it in 24-hour time; the line under the clock (the cities, else the stats line) up
+     * into the room the big digits keep under their baseline (the date line instead, with date_below_clock).
+     */
+    private void tightenClock() {
+        TextView clock = findViewById(R.id.clock);
+        TextView ampm = findViewById(R.id.ampm);
+        Rect digits = new Rect();
+        clock.getPaint().getTextBounds("0", 0, 1, digits);
+        // textAllCaps draws the letters in capitals, but getText keeps the lower case.
+        String letters = ampm.getText().toString().toUpperCase(Locale.getDefault());
+        float raise = 0f;
+        if (!letters.isEmpty()) {
+            Rect bounds = new Rect();
+            ampm.getPaint().getTextBounds(letters, 0, letters.length(), bounds);
+            raise = digits.top - bounds.top;
+        }
+        ampm.setTranslationY(raise);
+        setMarginStart(ampm, letters.isEmpty() ? 0 : Math.round(4 * density));
+        int pull = Math.max(0, Math.round(clock.getPaint().descent() - 10 * density));
+        int under = Math.round(4 * density);
+        if (dateBelowClock) {
+            // The date line is the one straight under the clock; the cities and stats follow it as before.
+            setTopMargin((View) findViewById(R.id.date).getParent(), under - pull);
+            return;
+        }
+        if (lunar) pull = 0;   // the lunar line hangs below the clock's baseline, beside it
+        setTopMargin(worldClocks, under - pull);
+        setTopMargin(stats, worldClockIds.isEmpty() ? under - pull : under);
+    }
+
+    /** Changes a view's margin only when it differs, so a layout listener does not ask for layout again and again. */
+    private static void setMarginStart(View view, int px) {
+        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+        if (lp.getMarginStart() == px) return;
+        lp.setMarginStart(px);
+        view.setLayoutParams(lp);
+    }
+
+    private static void setTopMargin(View view, int px) {
+        ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) view.getLayoutParams();
+        if (lp.topMargin == px) return;
+        lp.topMargin = px;
+        view.setLayoutParams(lp);
     }
 
     /** How far the first character's ink starts from the text's origin, in pixels. */
