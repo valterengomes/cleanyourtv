@@ -164,8 +164,9 @@ class SetValueTest(unittest.TestCase):
         self.assertEqual("Good evening", self.written()["greeting_name"])
 
     def test_a_key_the_launcher_never_reads_from_a_theme_is_refused(self):
-        # The table's own words for these two: "list, config.xml only" ... "Not read from a theme".
-        for key in ("input_sources", "settings_fallback_components"):
+        # The table's own words for this one: "list, config.xml only" ... "Not read from a theme". (input_sources
+        # was one too, until #1655 let a theme set it.)
+        for key in ("settings_fallback_components",):
             with self.subTest(key=key):
                 refusal = self.set_key(key, '["a/b"]')
                 self.assertIn(key, refusal)
@@ -184,7 +185,8 @@ class SetValueTest(unittest.TestCase):
         self.assertEqual("number", manage.declared_kind(manage.find("columns")))
         self.assertEqual("object", manage.declared_kind(manage.find("wallpaper_moods")))
         self.assertEqual("string", manage.declared_kind(manage.find("greeting_name")))
-        self.assertEqual("config-only", manage.declared_kind(manage.find("input_sources")))
+        self.assertEqual("config-only", manage.declared_kind(manage.find("settings_fallback_components")))
+        self.assertEqual("list", manage.declared_kind(manage.find("input_sources")))
         # A type cell this file does not recognise would fall through to "string" and let a wrong value
         # through, so every cell the table carries today has to land on a kind.
         known = {"bool", "list", "number", "object", "string", "config-only"}
