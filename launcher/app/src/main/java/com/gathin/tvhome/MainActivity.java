@@ -2639,6 +2639,17 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             lp.setMarginStart(Math.round(2 * density));   // the greeting's and the stats line's indent
         }
         clockColumn.addView(column, clockColumn.indexOfChild(clockRow) + 1, lp);
+        // The column now wraps its texts, so they must wrap too: a match_parent TextView does not ask for a new
+        // layout when its text gets longer, and the column kept the width of the day before ("TUESDAY 27 OCTOB…").
+        ViewGroup texts = (ViewGroup) column;
+        for (int i = 0; i < texts.getChildCount(); i++) {
+            View text = texts.getChildAt(i);
+            LinearLayout.LayoutParams textLp = (LinearLayout.LayoutParams) text.getLayoutParams();
+            textLp.width = ViewGroup.LayoutParams.WRAP_CONTENT;
+            // Keep each line where its own gravity put it (right in Hebrew) now that it no longer fills the column.
+            textLp.gravity = ((TextView) text).getGravity() & Gravity.HORIZONTAL_GRAVITY_MASK;
+            text.setLayoutParams(textLp);
+        }
     }
 
     /** The first top-bar button after Inputs that is shown, in bar order (top_bar_apps, the network pill, ...); Settings is always there. */
