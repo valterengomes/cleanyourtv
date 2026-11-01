@@ -274,6 +274,12 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     /** The same for springX, when single_row scrolls the grid sideways. */
     private float glassScrollShiftX;
     private int glassCardW;   // width of the tile the glass was last fitted to
+    /**
+     * The focused tile's rect in root coordinates as {@link #onTileFocused} last fitted the glass to it. The size
+     * alone cannot say whether the glass is on its tile: a cold start can run onTileFocused once the tile has its
+     * final width but before the grid has its top padding, which leaves the right size at the old Y.
+     */
+    private final Rect glassCardRect = new Rect();
     private boolean glassShown;
     private final Rect tileRect = new Rect();
     private final Rect revealRect = new Rect();
@@ -1841,6 +1847,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             glass.setRadius(AppAdapter.cornerRadius(card.getWidth(), density) * scale);
         }
         glassCardW = card.getWidth();
+        glassCardRect.set(r);
         glassTargetX = x;
         glassTargetY = y;
         // Cinematic shelf: the highlight glows in the dock app's colour, plain white in the grid (and on the dock with
@@ -1912,7 +1919,13 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         float scale = adapter.focusScale(pos);
         int w = (int) (card.getWidth() * scale + 2 * pad);
         int h = (int) (card.getHeight() * scale + 2 * pad);
-        if (!glassShown || card.getWidth() != glassCardW || glass.getWidth() != w || glass.getHeight() != h) {
+        // The tile's rect, not only its width: the grid's top padding lands after the tile has its width, so a
+        // cold start can leave the glass at the right size and the wrong place. Comparing the rect catches that.
+        Rect r = tileRect;
+        r.set(0, 0, card.getWidth(), card.getHeight());
+        root.offsetDescendantRectToMyCoords(card, r);
+        if (!glassShown || card.getWidth() != glassCardW || glass.getWidth() != w || glass.getHeight() != h
+                || !glassCardRect.equals(r)) {
             onTileFocused(pos, card);
         }
     }
