@@ -107,6 +107,8 @@ final class Config {
     final int lunarUtcOffset;
     /** The date on its own line under the clock instead of beside it (config.xml, date_below_clock). */
     final boolean dateBelowClock;
+    /** "12", "24" or "system" (config.xml / theme clock_format); see ClockFormat. */
+    final String clockFormat;
     /** The first grid row holds the non-dock apps opened most recently, under a "Recent apps" label (config.xml, recent_row). */
     final boolean recentRow;
     /** The island: one black pill at the top centre in place of the top bar's pills (config.xml, island). */
@@ -285,7 +287,7 @@ final class Config {
                    List<RaceWeekend.Race> raceCalendar, boolean cinematicHome, boolean ambientGlow, boolean appGlow, boolean fadeRows, int homeIdleClockMinutes,
                    boolean keyFilter, boolean dockGlass, String glowStyle, boolean wallpaperCaptions,
                    boolean handleViewInputs, boolean tileMenu, boolean dockEvenPadding, boolean dockBand, boolean cinematicDots, boolean cinematicWhiteFocus, boolean wifiStatusColor, int cinematicScrim, int cinematicArt,
-                   Map<String, Set<String>> wallpaperMoods, boolean gamepadPassthrough, boolean consumeVolumeKeys, boolean powerOnHome, boolean wifiStatusWarnings, List<String> topBarApps, boolean showGreeting, boolean headerWhite, boolean clockWallpaper, int clockWallpaperDim, boolean clockGlow, String glassStyle, boolean singleRow, boolean dockBandAll, boolean lunarDate, int lunarUtcOffset, boolean dateBelowClock, boolean recentRow, boolean island, String homeLayout, List<String> worldClocks) {
+                   Map<String, Set<String>> wallpaperMoods, boolean gamepadPassthrough, boolean consumeVolumeKeys, boolean powerOnHome, boolean wifiStatusWarnings, List<String> topBarApps, boolean showGreeting, boolean headerWhite, boolean clockWallpaper, int clockWallpaperDim, boolean clockGlow, String glassStyle, boolean singleRow, boolean dockBandAll, boolean lunarDate, int lunarUtcOffset, boolean dateBelowClock, boolean recentRow, boolean island, String homeLayout, List<String> worldClocks, String clockFormat) {
         this.handleViewInputs = handleViewInputs;
         this.tileMenu = tileMenu;
         this.inputKeycodes = inputKeycodes;
@@ -317,6 +319,7 @@ final class Config {
         this.lunarDate = lunarDate;
         this.lunarUtcOffset = lunarUtcOffset;
         this.dateBelowClock = dateBelowClock;
+        this.clockFormat = clockFormat;
         this.recentRow = recentRow;
         this.island = island;
         this.homeLayout = homeLayout;
@@ -497,6 +500,7 @@ final class Config {
         String glowStyle = res.getString(R.string.glow_style);
         boolean wifiStatusWarnings = res.getBoolean(R.bool.wifi_status_warnings);
         boolean dateBelowClock = res.getBoolean(R.bool.date_below_clock);
+        String clockFormat = res.getString(R.string.clock_format);
         boolean recentRow = res.getBoolean(R.bool.recent_row);
         boolean island = res.getBoolean(R.bool.island);
         String homeLayout = res.getString(R.string.home_layout);
@@ -601,6 +605,7 @@ final class Config {
             if (moods != null) wallpaperMoods = moods(moods);
             wifiStatusWarnings = bool(json, "wifi_status_warnings", wifiStatusWarnings);
             dateBelowClock = bool(json, "date_below_clock", dateBelowClock);
+            clockFormat = string(json, "clock_format", clockFormat);
             recentRow = bool(json, "recent_row", recentRow);
             island = bool(json, "island", island);
             homeLayout = string(json, "home_layout", homeLayout);
@@ -702,7 +707,7 @@ final class Config {
                 dockBand, cinematicDots, cinematicWhiteFocus, wifiStatusColor, cinematicScrim, cinematicArt, wallpaperMoods, gamepadPassthrough,
                 consumeVolumeKeys, powerOnHome, wifiStatusWarnings, topBarApps, showGreeting, headerWhite, clockWallpaper,
                 Math.max(0, Math.min(90, clockWallpaperDim)), clockGlow, glassStyle, singleRow && dockRow, dockBandAll, lunar, lunarOffset,
-                dateBelowClock, recentRow, island, homeLayout, WorldClocks.valid(worldClocks, java.time.ZoneId.getAvailableZoneIds()));
+                dateBelowClock, recentRow, island, homeLayout, WorldClocks.valid(worldClocks, java.time.ZoneId.getAvailableZoneIds()), clockFormat);
     }
 
     /**
