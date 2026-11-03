@@ -250,6 +250,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private TextView worldClocks;
     /** date_below_clock: the date line sits under the clock, so the line below keeps its own margin (tightenClock). */
     private boolean dateBelowClock;
+    /** clock_format, for the world clocks and the race panel's session times (the TextClocks take it in onCreate). */
+    private String clockFormat = "system";
     private final Runnable worldClockTick = new Runnable() {
         @Override
         public void run() {
@@ -272,6 +274,12 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     /** The same for springX, when single_row scrolls the grid sideways. */
     private float glassScrollShiftX;
     private int glassCardW;   // width of the tile the glass was last fitted to
+    /**
+     * The focused tile's rect in root coordinates as {@link #onTileFocused} last fitted the glass to it. The size
+     * alone cannot say whether the glass is on its tile: a cold start can run onTileFocused once the tile has its
+     * final width but before the grid has its top padding, which leaves the right size at the old Y.
+     */
+    private final Rect glassCardRect = new Rect();
     private boolean glassShown;
     private final Rect tileRect = new Rect();
     private final Rect revealRect = new Rect();
@@ -433,8 +441,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         public void onReceive(Context context, Intent intent) {
             updateClockVisibility();
             updateWorldClocks();
+            clockRefresh.start();   // the wall clock was set: line the redraw up with the new minute
         }
     };
+    /** Keeps the Home clocks moving on Android before 12 when the firmware stops ACTION_TIME_TICK (see ClockRefresh). */
+    private ClockRefresh clockRefresh;
     private final Runnable minuteTick = new Runnable() {
         @Override
         public void run() {
@@ -456,6 +467,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         density = getResources().getDisplayMetrics().density;
         // config.xml, overlaid by config.json from a pushed theme (see Config and tools/theme.sh).
         Config cfg = Config.load(this);
+        clockFormat = cfg.clockFormat;
+        ClockFormat.apply(getWindow().getDecorView(), clockFormat);
         appLibrarySelection = cfg.appLibrarySelection;
         libraryOkOpens = cfg.libraryOkOpens;
         // restore_key_services: after a force stop, put back the remote's accessibility helpers that Android took
@@ -528,6 +541,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (!cfg.dockTitle) hero.setVisibility(View.GONE);
         greeting = findViewById(R.id.greeting);
         clockBlock = findViewById(R.id.leftBlock);
+        clockRefresh = new ClockRefresh(clockBlock);
         greetingColor = greeting.getCurrentTextColor();
         if (!cfg.showGreeting) greeting.setVisibility(View.GONE);
         if (cfg.headerWhite) {
@@ -1058,6 +1072,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             registerReceiver(timeReceiver, timeFilter);
         }
         updateClockVisibility();
+        clockRefresh.start();   // with timeReceiver: while Home is visible, paused or not
         tileRefresh.onStart();
     }
 
@@ -1277,6 +1292,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onPause() {
         super.onPause();
+        cancelHoldOk();
         root.removeCallbacks(showIdleClock);
         endReorder();   // Home or another app while reordering keeps the order so far
         wallpaperPlayer.stop();
@@ -1301,6 +1317,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         super.onStop();
         started = false;
         unregisterReceiver(timeReceiver);
+        clockRefresh.stop();
         handler.removeCallbacks(clockCheck);
         stopped = true;
         tileRefresh.onStop();
@@ -1335,12 +1352,15 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             startPendingSettingsReorder();
             if (libraryFocusPending && appLibrary == null) focusLibrary();
             showCardPrompt();
+        } else {
+            cancelHoldOk();   // a dialog or another window took the remote while OK was held
         }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        cancelHoldOk();
         unregisterReceiver(packageReceiver);
         wallpaperPlayer.close();
         ConnectivityManager cm = getSystemService(ConnectivityManager.class);
@@ -1385,6 +1405,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         if (handleSettingsKey(event)) return true;
+        if (holdOk(event)) return true;
         if (tileMenuEnabled && !reordering && openPopup == null && cardPrompt == null
                 && event.getKeyCode() == KeyEvent.KEYCODE_MENU) {
             int position = focusedTilePosition();
@@ -1575,9 +1596,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 adapter.move(pos, slot);
                 adapter.move(adapter.positionOf(slotKey), pos);
             });
-            dockInSession.add(adapter.keyAt(slot));
             if (pos >= COLUMNS) dockInSession.remove(slotKey);
         }
+        // Outside the check: with no empty slots shown, the chosen app may already sit in the free place.
+        dockInSession.add(adapter.keyAt(slot));
         endReorder();
         refocusAfterLayout(slot);
     }
@@ -1837,6 +1859,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             glass.setRadius(AppAdapter.cornerRadius(card.getWidth(), density) * scale);
         }
         glassCardW = card.getWidth();
+        glassCardRect.set(r);
         glassTargetX = x;
         glassTargetY = y;
         // Cinematic shelf: the highlight glows in the dock app's colour, plain white in the grid (and on the dock with
@@ -1908,7 +1931,13 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         float scale = adapter.focusScale(pos);
         int w = (int) (card.getWidth() * scale + 2 * pad);
         int h = (int) (card.getHeight() * scale + 2 * pad);
-        if (!glassShown || card.getWidth() != glassCardW || glass.getWidth() != w || glass.getHeight() != h) {
+        // The tile's rect, not only its width: the grid's top padding lands after the tile has its width, so a
+        // cold start can leave the glass at the right size and the wrong place. Comparing the rect catches that.
+        Rect r = tileRect;
+        r.set(0, 0, card.getWidth(), card.getHeight());
+        root.offsetDescendantRectToMyCoords(card, r);
+        if (!glassShown || card.getWidth() != glassCardW || glass.getWidth() != w || glass.getHeight() != h
+                || !glassCardRect.equals(r)) {
             onTileFocused(pos, card);
         }
     }
@@ -2367,7 +2396,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private void updateWorldClocks() {
         if (worldClockIds.isEmpty()) return;
         worldClocks.setText(WorldClocks.line(worldClockIds, java.time.ZonedDateTime.now(),
-                android.text.format.DateFormat.is24HourFormat(this), Locale.getDefault()));
+                ClockFormat.is24(this, clockFormat), Locale.getDefault()));
     }
 
     private void stopStats() {
@@ -2490,26 +2519,15 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         return Math.max(0, Math.min(100, busy));
     }
 
-    /** RAM usage as {used, total} in MB, used = MemTotal - MemAvailable, e.g. "945 / 1536 MB". Used over
-     *  free so the line reads as a load against a known whole; null when /proc/meminfo cannot be read. */
+    /** RAM usage as {used, total} in MB (MemInfo.usedOfTotalMb); null when /proc/meminfo cannot be read. */
     private long[] memUsedOfTotalMb() {
-        long available = -1, total = -1;
+        java.util.List<String> lines = new java.util.ArrayList<>();
         try (java.io.BufferedReader r = new java.io.BufferedReader(new java.io.FileReader("/proc/meminfo"))) {
-            String line;
-            String[] t;
-            while ((line = r.readLine()) != null) {
-                if (line.startsWith("MemAvailable:")) {
-                    t = line.split("\\s+");
-                    if (t.length >= 2) available = Long.parseLong(t[1]) / 1024;
-                } else if (line.startsWith("MemTotal:")) {
-                    t = line.split("\\s+");
-                    if (t.length >= 2) total = Long.parseLong(t[1]) / 1024;
-                }
-            }
-        } catch (IOException | NumberFormatException ignored) {
+            for (String line; (line = r.readLine()) != null;) lines.add(line);
+        } catch (IOException ignored) {
+            return null;
         }
-        if (available < 0 || total <= 0) return null;
-        return new long[]{Math.max(0, total - available), total};
+        return MemInfo.usedOfTotalMb(lines);
     }
 
     private static String readFirstLine(String path) {
@@ -2639,6 +2657,17 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             lp.setMarginStart(Math.round(2 * density));   // the greeting's and the stats line's indent
         }
         clockColumn.addView(column, clockColumn.indexOfChild(clockRow) + 1, lp);
+        // The column now wraps its texts, so they must wrap too: a match_parent TextView does not ask for a new
+        // layout when its text gets longer, and the column kept the width of the day before ("TUESDAY 27 OCTOB…").
+        ViewGroup texts = (ViewGroup) column;
+        for (int i = 0; i < texts.getChildCount(); i++) {
+            View text = texts.getChildAt(i);
+            LinearLayout.LayoutParams textLp = (LinearLayout.LayoutParams) text.getLayoutParams();
+            textLp.width = ViewGroup.LayoutParams.WRAP_CONTENT;
+            // Keep each line where its own gravity put it (right in Hebrew) now that it no longer fills the column.
+            textLp.gravity = ((TextView) text).getGravity() & Gravity.HORIZONTAL_GRAVITY_MASK;
+            text.setLayoutParams(textLp);
+        }
     }
 
     /** The first top-bar button after Inputs that is shown, in bar order (top_bar_apps, the network pill, ...); Settings is always there. */
@@ -2892,7 +2921,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
 
         // FP1 FRI 11:00 PM   FP2 SAT 2:30 AM ...: done sessions fade, the live one is red, the next one bright.
         java.time.format.DateTimeFormatter when = java.time.format.DateTimeFormatter.ofPattern(
-                android.text.format.DateFormat.is24HourFormat(this) ? "EEE HH:mm" : "EEE h:mm a", Locale.getDefault())
+                ClockFormat.is24(this, clockFormat) ? "EEE HH:mm" : "EEE h:mm a", Locale.getDefault())
                 .withZone(java.time.ZoneId.systemDefault());
         android.text.SpannableStringBuilder row = new android.text.SpannableStringBuilder();
         for (int i = 0; i < race.sessions.size(); i++) {
@@ -3632,9 +3661,91 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
      * Remove from Home takes the shortcut off (only with the app library on, where one press adds it back);
      * App info opens the TV's page for the app, which is what holding OK used to do.
      */
+    // ---- hold OK ---------------------------------------------------------------------------------
+    // View's own long click misses on some remotes: an IR remote that sends its repeat frames as separate
+    // presses, or a Bluetooth one whose repeats land after a tile rebind, never holds one DOWN long enough.
+    // So the launcher times the hold itself: OK down on a tile, still down (or still repeating) after
+    // HOLD_OK_MS opens the tile menu, and the UP that follows is eaten so it doesn't also open the app.
+
+    private static final long HOLD_OK_MS = 550;
+    private long holdOkDown = -1;
+    private int holdOkPosition = -1;
+    private String holdOkKey;    // the app under OK when it went down; a tile rebuild can move another app to that slot
+    private boolean holdOkFired;
+    private final Runnable holdOkTimer = this::fireHoldOk;
+
+    private static boolean isOkKey(int code) {
+        return code == KeyEvent.KEYCODE_DPAD_CENTER || code == KeyEvent.KEYCODE_ENTER
+                || code == KeyEvent.KEYCODE_NUMPAD_ENTER || code == KeyEvent.KEYCODE_BUTTON_A;
+    }
+
+    /** True when the event belongs to a hold that opened the tile menu and must not reach the tile. */
+    private boolean holdOk(KeyEvent event) {
+        if (!tileMenuEnabled || !isOkKey(event.getKeyCode())) return false;
+        if (event.getAction() == KeyEvent.ACTION_DOWN) {
+            if (event.getRepeatCount() == 0) {
+                holdOkFired = false;
+                handler.removeCallbacks(holdOkTimer);
+                holdOkPosition = reordering || openPopup != null || cardPrompt != null ? -1 : focusedTilePosition();
+                holdOkKey = holdOkPosition < 0 || holdOkPosition >= adapter.appCount() ? null : adapter.keyAt(holdOkPosition);
+                if (holdOkKey == null) {
+                    holdOkDown = -1;
+                    return false;
+                }
+                holdOkDown = event.getDownTime();
+                handler.postDelayed(holdOkTimer, HOLD_OK_MS);
+                return false;
+            }
+            if (holdOkFired) return true;
+            if (holdOkDown >= 0 && event.getEventTime() - holdOkDown >= HOLD_OK_MS) {
+                fireHoldOk();
+                return true;
+            }
+            return false;
+        }
+        // ACTION_UP
+        handler.removeCallbacks(holdOkTimer);
+        holdOkDown = -1;
+        holdOkKey = null;
+        if (holdOkFired) {
+            holdOkFired = false;
+            View f = getCurrentFocus();
+            if (f != null) f.setPressed(false);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Stops timing a held OK when the launcher is paused, loses its window or goes away, so the menu can't open
+     * behind another screen. An interrupted press still counts as handled: its UP, if it comes back here, is eaten
+     * rather than opening the tile.
+     */
+    private void cancelHoldOk() {
+        handler.removeCallbacks(holdOkTimer);
+        if (holdOkDown >= 0) holdOkFired = true;
+        holdOkDown = -1;
+        holdOkPosition = -1;
+        holdOkKey = null;
+    }
+
+    private void fireHoldOk() {
+        handler.removeCallbacks(holdOkTimer);
+        if (holdOkDown < 0 || holdOkFired) return;
+        holdOkFired = true;
+        if (openPopup != null || reordering) return;   // View's own long click got there first
+        int position = holdOkPosition;
+        if (position < 0 || position >= adapter.appCount() || position != focusedTilePosition()) return;
+        // Same slot is not enough: tiles may have been rebuilt during the hold, so the app must match too.
+        if (!holdOkKey.equals(adapter.keyAt(position))) return;
+        View card = getCurrentFocus();
+        if (card != null) card.setPressed(false);
+        onTileLongPress(position, card);
+    }
+
     @Override
     public void onTileLongPress(int position, View card) {
-        if (reordering) return;
+        if (reordering || openPopup != null) return;
         String key = adapter.keyAt(position);
         String pkg = adapter.packageAt(position);
         // Empty dock slots and the Default-home tile carry the launcher's own package: no menu for them.

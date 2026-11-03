@@ -214,6 +214,9 @@
     <!-- The date (with the Shamsi and lunar lines) on its own line under the clock instead of beside it, for a top bar
          whose pills leave the date too little room. Can also be set with "date_below_clock" in a theme. -->
     <bool name="date_below_clock">false</bool>
+    <!-- The launcher's clocks (Home, the clock screensaver and the Clock screen) in 12- or 24-hour time whatever the TV
+         is set to: "12", "24", or "system", the default, which follows the TV. A theme can set "clock_format": "24". -->
+    <string name="clock_format" translatable="false">system</string>
     <!-- LWNGE redesign: the first grid row holds the non-dock apps opened most recently from Home, under a "Recent apps"
          label; the rest of the grid keeps its order. Can also be set with "recent_row" in a theme. -->
     <bool name="recent_row">true</bool>
