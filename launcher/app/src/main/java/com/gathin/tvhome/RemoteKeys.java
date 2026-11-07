@@ -278,4 +278,9 @@ final class RemoteKeys {
         } catch (ActivityNotFoundException ignored) {
         }
     }
+
+    /** Channel Up or Down, for home_ignore_channel_keys. */
+    static boolean isChannelKey(int keyCode) {
+        return keyCode == KeyEvent.KEYCODE_CHANNEL_UP || keyCode == KeyEvent.KEYCODE_CHANNEL_DOWN;
+    }
 }
