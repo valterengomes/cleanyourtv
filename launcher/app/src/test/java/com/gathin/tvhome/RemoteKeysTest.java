@@ -125,4 +125,11 @@ public class RemoteKeysTest {
         assertEquals(0, RemoteKeys.globalAction("mute", 34));
         assertEquals(0, RemoteKeys.globalAction("com.netflix.ninja", 34));
     }
+
+    @Test public void channelKeysAreChannelUpAndDownOnly() {
+        assertTrue(RemoteKeys.isChannelKey(166));   // KEYCODE_CHANNEL_UP
+        assertTrue(RemoteKeys.isChannelKey(167));   // KEYCODE_CHANNEL_DOWN
+        assertFalse(RemoteKeys.isChannelKey(170));  // KEYCODE_TV
+        assertFalse(RemoteKeys.isChannelKey(24));   // KEYCODE_VOLUME_UP
+    }
 }
