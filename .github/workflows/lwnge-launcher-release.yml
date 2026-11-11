@@ -14,7 +14,7 @@ permissions:
   attestations: write
 
 env:
-  LAUNCHER_COMMIT: 91a647c6e5c06072e504fe5acd11f0ddd0480403
+  LAUNCHER_COMMIT: 8cfac26272ed8cee30ebee4db4fcc05700221d3b
   # SHA-256 of LWNGE's signing certificate. A release signed with anything else is refused.
   SIGNER_SHA256: 9e2bf89484e31372691f4855b80a4452977aa25a3381b1541a934532b6ec485e
 
